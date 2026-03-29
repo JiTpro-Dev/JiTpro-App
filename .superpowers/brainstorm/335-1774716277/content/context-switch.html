@@ -1,0 +1,110 @@
+<h2>Context Switching: How does the left nav change between Company and Project?</h2>
+<p class="subtitle">When a user opens a project, the left nav needs to show project-specific navigation instead of company navigation</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f8fafc;">
+      <div style="display: flex; gap: 12px; height: 260px; font-family: system-ui; font-size: 11px;">
+        <!-- Company state -->
+        <div style="flex: 1; display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <div style="background: #e2e8f0; padding: 4px 8px; font-size: 9px; color: #64748b; text-align: center;">COMPANY VIEW</div>
+          <div style="width: 100%; background: #1e293b; color: #94a3b8; flex: 1; display: flex; flex-direction: column;">
+            <div style="padding: 12px; border-bottom: 1px solid #334155;">
+              <div style="color: #f59e0b; font-weight: 700; font-size: 12px;">JiTpro</div>
+              <div style="font-size: 9px; margin-top: 2px; color: #64748b;">Kaufman Construction</div>
+            </div>
+            <div style="padding: 6px 12px; color: #e2e8f0; background: #334155; font-size: 10px;">Home</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Projects</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Pre-bid Tools</div>
+            <div style="padding: 6px 12px; font-size: 10px;">People</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Organizations</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Billing</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Settings</div>
+          </div>
+        </div>
+        <!-- Arrow -->
+        <div style="display: flex; align-items: center; color: #94a3b8; font-size: 20px;">→</div>
+        <!-- Project state - full replace -->
+        <div style="flex: 1; display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <div style="background: #e2e8f0; padding: 4px 8px; font-size: 9px; color: #64748b; text-align: center;">PROJECT VIEW</div>
+          <div style="width: 100%; background: #1e293b; color: #94a3b8; flex: 1; display: flex; flex-direction: column;">
+            <div style="padding: 12px; border-bottom: 1px solid #334155;">
+              <div style="color: #f59e0b; font-weight: 700; font-size: 12px;">JiTpro</div>
+              <div style="font-size: 9px; margin-top: 2px; color: #64748b;">Kaufman Construction</div>
+            </div>
+            <div style="padding: 6px 12px; background: #0f172a; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 4px;">
+              <span style="font-size: 9px; color: #64748b;">←</span>
+              <span style="font-size: 10px; color: #e2e8f0; font-weight: 500;">Maple St Residence</span>
+            </div>
+            <div style="padding: 6px 12px; color: #e2e8f0; background: #334155; font-size: 10px;">Overview</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Items</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Schedule</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Requests</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Documents</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Team</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Baselines</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Settings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Full Replace with Back Button</h3>
+      <p>Entering a project replaces the entire left nav with project nav. A back arrow + project name at the top returns to company view. Clean, focused — you're "inside" the project. Used by Linear, Notion.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f8fafc;">
+      <div style="display: flex; gap: 12px; height: 260px; font-family: system-ui; font-size: 11px;">
+        <!-- Company state -->
+        <div style="flex: 1; display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <div style="background: #e2e8f0; padding: 4px 8px; font-size: 9px; color: #64748b; text-align: center;">COMPANY VIEW</div>
+          <div style="width: 100%; background: #1e293b; color: #94a3b8; flex: 1; display: flex; flex-direction: column;">
+            <div style="padding: 12px; border-bottom: 1px solid #334155;">
+              <div style="color: #f59e0b; font-weight: 700; font-size: 12px;">JiTpro</div>
+              <div style="font-size: 9px; margin-top: 2px; color: #64748b;">Kaufman Construction</div>
+            </div>
+            <div style="padding: 6px 12px; color: #e2e8f0; background: #334155; font-size: 10px;">Home</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Projects</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Pre-bid Tools</div>
+            <div style="padding: 6px 12px; font-size: 10px;">People</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Organizations</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Billing</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Settings</div>
+          </div>
+        </div>
+        <!-- Arrow -->
+        <div style="display: flex; align-items: center; color: #94a3b8; font-size: 20px;">→</div>
+        <!-- Project state - dropdown switcher -->
+        <div style="flex: 1; display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <div style="background: #e2e8f0; padding: 4px 8px; font-size: 9px; color: #64748b; text-align: center;">PROJECT VIEW</div>
+          <div style="width: 100%; background: #1e293b; color: #94a3b8; flex: 1; display: flex; flex-direction: column;">
+            <div style="padding: 12px; border-bottom: 1px solid #334155;">
+              <div style="color: #f59e0b; font-weight: 700; font-size: 12px;">JiTpro</div>
+              <div style="font-size: 9px; margin-top: 2px; color: #64748b;">Kaufman Construction</div>
+            </div>
+            <!-- Context switcher dropdown -->
+            <div style="margin: 8px; padding: 8px; background: #0f172a; border-radius: 6px; border: 1px solid #334155;">
+              <div style="font-size: 9px; color: #64748b;">Current Project</div>
+              <div style="font-size: 10px; color: #e2e8f0; font-weight: 500; display: flex; justify-content: space-between; align-items: center;">
+                Maple St Residence <span style="font-size: 8px;">▼</span>
+              </div>
+            </div>
+            <div style="padding: 6px 12px; color: #e2e8f0; background: #334155; font-size: 10px;">Overview</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Items</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Schedule</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Requests</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Documents</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Team</div>
+            <div style="padding: 6px 12px; font-size: 10px;">Baselines</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Full Replace with Project Switcher Dropdown</h3>
+      <p>Same full replace, but instead of a back button, a dropdown lets you switch projects directly or return to Company Home. Faster project-to-project navigation. Used by Procore, Autodesk Construction Cloud.</p>
+    </div>
+  </div>
+</div>

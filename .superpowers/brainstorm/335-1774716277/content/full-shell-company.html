@@ -1,0 +1,131 @@
+<h2>Full App Shell: Company View</h2>
+<p class="subtitle">This is the assembled shell when a user is at the company workspace level — all decisions applied</p>
+
+<div class="mockup">
+  <div class="mockup-header">Company Home — Expanded Nav</div>
+  <div class="mockup-body" style="padding: 0;">
+    <div style="display: flex; height: 520px; font-family: system-ui; font-size: 11px; overflow: hidden;">
+
+      <!-- LEFT NAV - Dark, collapsible (shown expanded ~200px) -->
+      <div style="width: 200px; background: #1e293b; color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0;">
+        <!-- Logo + Company -->
+        <div style="padding: 14px 16px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="color: #f59e0b; font-weight: 700; font-size: 14px; letter-spacing: -0.02em;">JiTpro</div>
+            <div style="font-size: 9px; margin-top: 2px; color: #64748b;">Kaufman Construction</div>
+          </div>
+          <div style="color: #475569; font-size: 14px; cursor: pointer; padding: 2px 4px;" title="Collapse nav">«</div>
+        </div>
+
+        <!-- Workspace group -->
+        <div style="padding: 14px 16px 4px; font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">Workspace</div>
+        <div style="padding: 7px 16px; color: #f1f5f9; background: #334155; border-left: 2px solid #f59e0b; font-weight: 500; font-size: 11px;">Home</div>
+        <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Projects</div>
+
+        <!-- Pre-bid group -->
+        <div style="padding: 14px 16px 4px; font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">Pre-bid Tools</div>
+        <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Scope Builder</div>
+        <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Selection Register</div>
+
+        <!-- Directories group -->
+        <div style="padding: 14px 16px 4px; font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">Directories</div>
+        <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">People</div>
+        <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Organizations</div>
+
+        <!-- Standards group -->
+        <div style="padding: 14px 16px 4px; font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">Standards</div>
+        <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Cost Codes</div>
+        <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Calendars</div>
+        <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Project Templates</div>
+
+        <div style="flex: 1;"></div>
+
+        <!-- Admin group at bottom -->
+        <div style="border-top: 1px solid #334155; padding: 8px 0;">
+          <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Billing</div>
+          <div style="padding: 7px 16px; font-size: 11px; border-left: 2px solid transparent;">Settings</div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE -->
+      <div style="flex: 1; display: flex; flex-direction: column; background: #f8fafc;">
+
+        <!-- TOP BAR - Light utility strip -->
+        <div style="height: 48px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0;">
+          <!-- Breadcrumb -->
+          <div style="font-size: 11px; color: #64748b;">
+            <span style="color: #94a3b8;">Kaufman Construction</span>
+            <span style="color: #cbd5e1; margin: 0 6px;">›</span>
+            <span style="color: #1e293b; font-weight: 500;">Home</span>
+          </div>
+          <!-- Right actions -->
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <!-- Create button -->
+            <div style="padding: 5px 14px; background: #1e293b; color: #fff; border-radius: 6px; font-size: 10px; font-weight: 500;">+ Create Project</div>
+            <!-- Notifications -->
+            <div style="position: relative;">
+              <span style="font-size: 16px; color: #64748b;">🔔</span>
+              <span style="position: absolute; top: -4px; right: -6px; background: #ef4444; color: #fff; font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 8px;">3</span>
+            </div>
+            <!-- Help -->
+            <span style="font-size: 14px; color: #94a3b8;">?</span>
+            <!-- Profile -->
+            <div style="width: 28px; height: 28px; background: #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 10px; font-weight: 700;">JK</div>
+          </div>
+        </div>
+
+        <!-- PAGE HEADER -->
+        <div style="background: #fff; padding: 18px 20px 14px; border-bottom: 1px solid #e2e8f0;">
+          <div style="font-size: 20px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em;">Company Home</div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 3px;">5 active projects · 2 at risk · 1 awaiting activation</div>
+        </div>
+
+        <!-- CONTENT AREA -->
+        <div style="flex: 1; padding: 20px; overflow-y: auto;">
+          <!-- Summary cards row -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px;">
+              <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">My Work</div>
+              <div style="font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 4px;">12</div>
+              <div style="font-size: 10px; color: #64748b;">items assigned to you</div>
+            </div>
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px;">
+              <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Needing Attention</div>
+              <div style="font-size: 22px; font-weight: 700; color: #dc2626; margin-top: 4px;">4</div>
+              <div style="font-size: 10px; color: #64748b;">across 2 projects</div>
+            </div>
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px;">
+              <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Waiting on External</div>
+              <div style="font-size: 22px; font-weight: 700; color: #d97706; margin-top: 4px;">7</div>
+              <div style="font-size: 10px; color: #64748b;">open requests</div>
+            </div>
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px;">
+              <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Active Projects</div>
+              <div style="font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 4px;">5</div>
+              <div style="font-size: 10px; color: #64748b;">1 in setup</div>
+            </div>
+          </div>
+          <!-- Content placeholder -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+            <div>
+              <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+                <div style="font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">Active Projects</div>
+                <div style="height: 60px; background: #f8fafc; border-radius: 4px;"></div>
+              </div>
+              <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px;">
+                <div style="font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">Recent Activity</div>
+                <div style="height: 60px; background: #f8fafc; border-radius: 4px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px;">
+                <div style="font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">Quick Actions</div>
+                <div style="height: 140px; background: #f8fafc; border-radius: 4px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

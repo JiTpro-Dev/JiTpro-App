@@ -1,0 +1,73 @@
+<h2>Page Header: What should every page header look like?</h2>
+<p class="subtitle">This pattern repeats on every page — it needs to handle titles, actions, and optional filters consistently</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f8fafc;">
+      <div style="font-family: system-ui; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <!-- Page header -->
+        <div style="background: #fff; padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 10px; color: #64748b;">Kaufman Construction &gt; Maple St Residence</div>
+              <div style="font-size: 16px; font-weight: 700; color: #1e293b; margin-top: 2px;">Procurement Items</div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="padding: 5px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 10px; color: #64748b;">Export</div>
+              <div style="padding: 5px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 10px; color: #64748b;">Import CSV</div>
+              <div style="padding: 5px 12px; background: #1e293b; color: #fff; border-radius: 6px; font-size: 10px;">+ Create Item</div>
+            </div>
+          </div>
+          <!-- Filter bar -->
+          <div style="display: flex; gap: 8px; margin-top: 12px; align-items: center;">
+            <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b; background: #fff;">Status ▼</div>
+            <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b; background: #fff;">Health ▼</div>
+            <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b; background: #fff;">Owner ▼</div>
+            <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b; background: #fff;">Category ▼</div>
+            <div style="flex: 1;"></div>
+            <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b; background: #fff;">🔍 Search items...</div>
+          </div>
+        </div>
+        <!-- Content hint -->
+        <div style="background: #f8fafc; padding: 12px 20px; font-size: 10px; color: #94a3b8;">Table content below...</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Compact — Breadcrumb + Title + Actions on one row, filters below</h3>
+      <p>Breadcrumb sits above the title as small text. Title and actions share a row. Filter bar is a second row that only appears on pages with filterable content. Tight, efficient use of vertical space.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f8fafc;">
+      <div style="font-family: system-ui; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <!-- Page header -->
+        <div style="background: #fff; padding: 20px; border-bottom: 1px solid #e2e8f0;">
+          <div style="font-size: 10px; color: #64748b; margin-bottom: 4px;">Kaufman Construction &gt; Maple St Residence</div>
+          <div style="font-size: 18px; font-weight: 700; color: #1e293b;">Procurement Items</div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">142 items · 12 at risk · 8 waiting on external</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 14px; border-top: 1px solid #f1f5f9;">
+            <div style="display: flex; gap: 8px;">
+              <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b;">Status ▼</div>
+              <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b;">Health ▼</div>
+              <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b;">Owner ▼</div>
+              <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b;">Category ▼</div>
+              <div style="padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 9px; color: #64748b;">🔍 Search</div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <div style="padding: 5px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 10px; color: #64748b;">Export</div>
+              <div style="padding: 5px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 10px; color: #64748b;">Import CSV</div>
+              <div style="padding: 5px 12px; background: #1e293b; color: #fff; border-radius: 6px; font-size: 10px;">+ Create Item</div>
+            </div>
+          </div>
+        </div>
+        <!-- Content hint -->
+        <div style="background: #f8fafc; padding: 12px 20px; font-size: 10px; color: #94a3b8;">Table content below...</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Spacious — Title block with summary stats, then filters + actions row</h3>
+      <p>Breadcrumb, title, and a summary stat line ("142 items · 12 at risk") as a title block. Then a combined filters + actions row separated by a subtle divider. More breathing room, dashboard feel. Used by Procore project pages.</p>
+    </div>
+  </div>
+</div>

@@ -9,6 +9,8 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 *.local
 
 # Logs
@@ -33,3 +35,4 @@ lerna-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+supabase/.temp/

@@ -1,0 +1,94 @@
+<h2>Current Company Home (Dashboard)</h2>
+<p class="subtitle">What's currently built in Dashboard.tsx + Navbar.tsx</p>
+
+<div class="mockup">
+  <div class="mockup-header">Company Dashboard — /dashboard</div>
+  <div class="mockup-body" style="background:#fff; padding:0;">
+
+    <!-- Navbar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:0 24px; height:64px; border-bottom:1px solid #e2e8f0; background:#fff;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="background:#0f172a; color:#fff; font-weight:700; font-size:16px; padding:6px 14px; border-radius:6px;">JiTpro</div>
+        <span style="font-size:16px; font-weight:600; color:#0f172a;">Company Dashboard</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="background:#0f172a; color:#fff; font-size:13px; font-weight:500; padding:8px 16px; border-radius:6px; cursor:pointer;">Launch App</span>
+        <span style="font-size:13px; font-weight:500; color:#475569; padding:8px 16px; cursor:pointer;">View Demo</span>
+        <span style="font-size:13px; font-weight:500; color:#475569; padding:8px 16px; cursor:pointer;">Completed Projects ▼</span>
+        <span style="font-size:13px; font-weight:500; color:#475569; padding:8px 16px; cursor:pointer;">Log Out</span>
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div style="padding:32px 24px; max-width:768px;">
+      <h3 style="font-size:18px; font-weight:600; color:#0f172a; margin:0 0 24px 0;">Current Projects</h3>
+
+      <!-- Empty state -->
+      <div style="border:1px solid #e2e8f0; border-radius:8px; padding:32px; text-align:center; background:#fff;">
+        <p style="color:#475569; font-size:14px; margin:0 0 16px 0;">No current projects.</p>
+        <span style="display:inline-block; background:#0f172a; color:#fff; padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; cursor:pointer;">Create Your First Project</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Navbar behavior notes -->
+<div style="margin-top:24px;">
+  <h3>Navbar — Two-Mode Behavior</h3>
+  <p class="subtitle">Navbar changes based on whether you're on the dashboard or inside a project/page</p>
+
+  <div class="split" style="margin-top:16px;">
+    <div class="mockup">
+      <div class="mockup-header">Mode 1: On Company Dashboard</div>
+      <div class="mockup-body" style="padding:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:0 16px; height:56px; background:#fff;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="background:#0f172a; color:#fff; font-weight:700; font-size:13px; padding:4px 10px; border-radius:4px;">JiTpro</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:11px;">
+            <span style="background:#0f172a; color:#fff; padding:6px 12px; border-radius:4px; font-weight:500;">Launch App</span>
+            <span style="color:#475569; padding:6px 8px;">View Demo</span>
+            <span style="color:#475569; padding:6px 8px;">Completed ▼</span>
+            <span style="color:#475569; padding:6px 8px;">Log Out</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Mode 2: On Any Other Page</div>
+      <div class="mockup-body" style="padding:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:0 16px; height:56px; background:#fff;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="background:#0f172a; color:#fff; font-weight:700; font-size:13px; padding:4px 10px; border-radius:4px;">JiTpro</div>
+            <span style="font-size:13px; font-weight:600; color:#0f172a;">Page Title</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:11px;">
+            <span style="color:#475569; padding:6px 8px;">Company Dashboard</span>
+            <span style="color:#475569; padding:6px 8px;">Completed ▼</span>
+            <span style="color:#475569; padding:6px 8px;">Log Out</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Implementation notes -->
+<div style="margin-top:24px; padding:16px; background:#1e293b; border-radius:8px; color:#94a3b8; font-size:13px;">
+  <strong style="color:#e2e8f0;">Implementation status:</strong>
+  <ul style="margin:8px 0 0 0; padding-left:20px; line-height:1.8;">
+    <li><span style="color:#4ade80;">✓</span> Two-mode navbar logic (isDashboard check)</li>
+    <li><span style="color:#4ade80;">✓</span> Completed Projects hover dropdown (empty state)</li>
+    <li><span style="color:#4ade80;">✓</span> Project cards grid layout (md:2-col, lg:3-col)</li>
+    <li><span style="color:#4ade80;">✓</span> Empty state with "Create Your First Project" CTA</li>
+    <li><span style="color:#4ade80;">✓</span> "Launch App" links to /company/setup</li>
+    <li><span style="color:#fbbf24;">○</span> No Supabase query — project list is hardcoded empty array</li>
+    <li><span style="color:#fbbf24;">○</span> No "Create New Project" button (currently "Launch App" goes to setup)</li>
+    <li><span style="color:#fbbf24;">○</span> "View Demo" still visible (temporary, Jeff's use only)</li>
+    <li><span style="color:#f87171;">✗</span> No left nav — UI/UX spec calls for persistent left navigation + top bar shell</li>
+    <li><span style="color:#f87171;">✗</span> No summary row (My Work, Projects Requiring Attention, etc.)</li>
+    <li><span style="color:#f87171;">✗</span> No right rail (quick actions, onboarding checklist)</li>
+    <li><span style="color:#f87171;">✗</span> Page title says "Company Dashboard" — UI/UX spec calls it "Company Home"</li>
+  </ul>
+</div>

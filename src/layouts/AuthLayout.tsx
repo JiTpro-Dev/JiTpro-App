@@ -5,7 +5,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-slate-900">JiTpro</h1>
+          <img src={`${import.meta.env.BASE_URL}JiTpro.jpg`} alt="JiTpro" className="h-16 mx-auto" />
         </div>
         {children}
       </div>
