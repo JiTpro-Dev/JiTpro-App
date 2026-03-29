@@ -1,0 +1,37 @@
+Table,Column,Type,Required,Default,Notes
+roles,id,UUID,Yes,Auto-generated,Primary key
+roles,category,Text,Yes,,owner / architect / engineer / general_contractor / subcontractor / supplier / consultant / other
+roles,sub_role,Text,Yes,,e.g. Project Manager / Lead Architect / Superintendent
+roles,sort_order,Integer,No,0,Controls display order within a category
+,,,,,,
+project_team,id,UUID,Yes,Auto-generated,Primary key
+project_team,user_id,UUID,Yes,,References the logged-in user who created this record
+project_team,first_name,Text,Yes,,
+project_team,last_name,Text,Yes,,
+project_team,title,Text,No,,e.g. VP of Operations
+project_team,company,Text,No,,Their firm or company name
+project_team,email,Text,No,,
+project_team,phone,Text,No,,
+project_team,role_id,UUID,Yes,,References roles table (category + sub_role)
+project_team,is_active,Boolean,No,true,Deactivate without losing history
+project_team,created_at,Timestamp,No,Now,
+project_team,updated_at,Timestamp,No,Now,Auto-updates on edit
+,,,,,,
+procurement_timelines,id,UUID,Yes,Auto-generated,Primary key
+procurement_timelines,user_id,UUID,Yes,,References the logged-in user who created this record
+procurement_timelines,name,Text,Yes,,e.g. Structural Steel / Windows & Doors
+procurement_timelines,description,Text,No,,Optional notes about this procurement item
+procurement_timelines,delivery_date,Date,Yes,,The Delivered - Ready for Install date
+procurement_timelines,timeline_data,JSON,Yes,,Array of tasks/milestones with durations
+procurement_timelines,final_design_enabled,Boolean,No,false,
+procurement_timelines,final_design_date,Date,No,,
+procurement_timelines,final_selection_enabled,Boolean,No,false,
+procurement_timelines,final_selection_date,Date,No,,
+procurement_timelines,created_at,Timestamp,No,Now,
+procurement_timelines,updated_at,Timestamp,No,Now,Auto-updates on edit
+,,,,,,
+timeline_assignments,id,UUID,Yes,Auto-generated,Primary key
+timeline_assignments,timeline_id,UUID,Yes,,References procurement_timelines table
+timeline_assignments,task_name,Text,Yes,,Matches task/milestone name in the timeline (e.g. Fabrication / 1st Review)
+timeline_assignments,team_member_id,UUID,Yes,,References project_team table
+timeline_assignments,created_at,Timestamp,No,Now,

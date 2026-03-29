@@ -1,4 +1,12 @@
-# JiTpro Application Architecture
+# Implementation Architecture
+
+This document describes the concrete implementation details of the JiTpro system.
+
+For high-level system design, deployment architecture, and governance rules, see:
+
+docs/architecture/system-overview.md
+
+---
 
 ## Tech Stack
 
@@ -27,9 +35,13 @@ src/
 supabase/
 └── client.ts          # Supabase client initialization
 docs/
-├── architecture.md    # This file
-├── claude_instructions.md
-└── profiles_table.sql # Database schema SQL
+├── architecture/
+│   ├── system-overview.md    # High-level architecture
+│   └── implementation.md     # This file
+├── guides/
+│   └── claude-instructions.md
+└── schema/
+    └── profiles_table.sql    # Database schema SQL
 ```
 
 ## Auth Flow

@@ -70,7 +70,7 @@ Unauthenticated users are redirected to /login.
 
 ## Database
 
-Current table: `profiles` (see docs/profiles_table.sql)
+Current table: `profiles` (see docs/schema/profiles_table.sql)
 
 Future tables (not yet created):
 - projects

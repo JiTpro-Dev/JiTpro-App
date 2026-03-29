@@ -33,11 +33,11 @@
 - `/*` → Redirects to `/login`
 
 ### Database
-- `docs/profiles_table.sql` — SQL for profiles table with RLS policies and auto-create trigger (not yet run in Supabase)
+- `docs/schema/profiles_table.sql` — SQL for profiles table with RLS policies and auto-create trigger (not yet run in Supabase)
 
 ### Documentation
-- `docs/architecture.md` — project structure, tech stack, auth flow, schema
-- `docs/claude_instructions.md` — full dev instructions for future sessions
+- `docs/architecture/implementation.md` — project structure, tech stack, auth flow, schema
+- `docs/guides/claude-instructions.md` — full dev instructions for future sessions
 
 ---
 
@@ -63,7 +63,7 @@
 
 ### Immediate (before first login)
 1. **Create admin user in Supabase** — go to Supabase dashboard > Authentication > Users > Add User, set email to `jeff@jit-pro.com` with a password
-2. **Run profiles table SQL** — go to Supabase dashboard > SQL Editor, paste contents of `docs/profiles_table.sql` and run it
+2. **Run profiles table SQL** — go to Supabase dashboard > SQL Editor, paste contents of `docs/schema/profiles_table.sql` and run it
 3. **Verify login** — run `npm run dev`, log in with the admin credentials
 
 ### Short-Term

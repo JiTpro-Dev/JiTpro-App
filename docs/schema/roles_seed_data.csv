@@ -1,0 +1,27 @@
+Category,Sub-Role,Sort Order
+owner,Owner,1
+owner,Owner Spouse,2
+owner,Owner Representative,3
+,,
+architect,Lead Architect,1
+architect,Project Architect,2
+,,
+engineer,Lead Engineer,1
+engineer,Project Engineer,2
+,,
+general_contractor,Principle,1
+general_contractor,Senior Project Manager,2
+general_contractor,Project Manager,3
+general_contractor,Project Engineer,4
+general_contractor,Superintendent,5
+general_contractor,Foreman,6
+,,
+subcontractor,Principle,1
+subcontractor,Project Manager,2
+subcontractor,Superintendent,3
+,,
+supplier,Supplier,1
+,,
+consultant,Consultant,1
+,,
+other,Other,1
