@@ -2,10 +2,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SetupLayout } from '../../layouts/SetupLayout';
+import { CompanyProfile } from './steps/CompanyProfile';
+import { CompanyAdmin } from './steps/CompanyAdmin';
 import { HolidayCalendar } from './steps/HolidayCalendar';
 import { CompanyContacts } from './steps/CompanyContacts';
 import { CostCodes } from './steps/CostCodes';
 import { PclTemplates } from './steps/PclTemplates';
+import type { CompanyProfileData } from './steps/CompanyProfile';
+import type { CompanyAdminData } from './steps/CompanyAdmin';
 import type { Holiday, ContactRow, CostCodeNode } from './setupTypes';
 import { defaultHolidays, defaultPclTemplates } from './setupTypes';
 
@@ -21,8 +25,20 @@ const steps = [
 export function SetupWizard() {
   const navigate = useNavigate();
 
-  // Start at step 2 (index 2) since steps 0 and 1 are already built
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  // Step 1: Company Profile state
+  const [profileData, setProfileData] = useState<CompanyProfileData>({
+    legalName: '', displayName: '', address: '', city: '', state: '',
+    zip: '', licenseNumber: '', companyPhone: '', timezone: 'America/Los_Angeles',
+  });
+
+  // Step 2: Company Admin state
+  const [adminData, setAdminData] = useState<CompanyAdminData>({
+    adminFirstName: '', adminLastName: '', adminTitle: '', adminEmail: '', adminPhone: '',
+    addSecondaryAdmin: false, secondaryFirstName: '', secondaryLastName: '',
+    secondaryTitle: '', secondaryEmail: '', secondaryPhone: '',
+  });
 
   // Step 3: Holiday Calendar state
   const [holidays, setHolidays] = useState<Holiday[]>([...defaultHolidays]);
@@ -43,11 +59,11 @@ export function SetupWizard() {
   };
 
   const handleBack = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 2));
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
   const handleStepClick = (index: number) => {
-    if (index >= 2 && index <= currentStep) {
+    if (index <= currentStep) {
       setCurrentStep(index);
     }
   };
@@ -59,9 +75,15 @@ export function SetupWizard() {
       onStepClick={handleStepClick}
       onBack={handleBack}
       onNext={handleNext}
-      isFirstStep={currentStep === 2}
+      isFirstStep={currentStep === 0}
       isLastStep={currentStep === steps.length - 1}
     >
+      {currentStep === 0 && (
+        <CompanyProfile data={profileData} onChange={setProfileData} />
+      )}
+      {currentStep === 1 && (
+        <CompanyAdmin data={adminData} onChange={setAdminData} />
+      )}
       {currentStep === 2 && (
         <HolidayCalendar holidays={holidays} onHolidaysChange={setHolidays} />
       )}
