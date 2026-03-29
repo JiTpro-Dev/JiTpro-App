@@ -13,6 +13,7 @@ import { ProcurementSchedule } from './pages/demos/ProcurementSchedule';
 import { CompanySetup } from './pages/CompanySetup';
 import { AppShell } from './layouts/AppShell/AppShell';
 import { CompanyHome } from './pages/app/CompanyHome';
+import { SetupWizard } from './pages/setup/SetupWizard';
 
 function App() {
   return (
@@ -82,6 +83,14 @@ function App() {
             element={
               <RequireAuth>
                 <ProjectDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/setup"
+            element={
+              <RequireAuth>
+                <SetupWizard />
               </RequireAuth>
             }
           />
