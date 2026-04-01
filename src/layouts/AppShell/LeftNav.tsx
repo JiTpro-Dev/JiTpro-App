@@ -7,9 +7,10 @@ import { companyNavGroups, companyAdminItems, projectNavGroups } from './navConf
 interface LeftNavProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  companyName: string;
 }
 
-export function LeftNav({ isCollapsed, onToggleCollapse }: LeftNavProps) {
+export function LeftNav({ isCollapsed, onToggleCollapse, companyName }: LeftNavProps) {
   const location = useLocation();
   const projectMatch = location.pathname.match(/\/app\/project\/([^/]+)/);
   const projectId = projectMatch?.[1] ?? null;
@@ -34,7 +35,7 @@ export function LeftNav({ isCollapsed, onToggleCollapse }: LeftNavProps) {
       role="navigation"
       aria-label="Main navigation"
     >
-      <NavHeader isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} />
+      <NavHeader isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} companyName={companyName} />
 
       {isProjectContext && (
         <ProjectSwitcher

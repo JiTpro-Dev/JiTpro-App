@@ -1,19 +1,21 @@
 import { ChevronsLeft, ChevronsRight } from 'lucide-react';
+import jitproLogo from '../../assets/jitpro_amber_stripped.svg';
 
 interface NavHeaderProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  companyName: string;
 }
 
-export function NavHeader({ isCollapsed, onToggleCollapse }: NavHeaderProps) {
+export function NavHeader({ isCollapsed, onToggleCollapse, companyName }: NavHeaderProps) {
   return (
     <div className="flex items-center justify-between border-b border-slate-700 px-4 py-[14px]">
       {isCollapsed ? (
-        <span className="mx-auto text-[14px] font-bold text-amber-500">J</span>
+        <img src={jitproLogo} alt="JiTpro" className="mx-auto h-6" />
       ) : (
         <div>
-          <div className="text-[14px] font-bold tracking-tight text-amber-500">JiTpro</div>
-          <div className="mt-[2px] text-[9px] text-slate-500">Kaufman Construction</div>
+          <img src={jitproLogo} alt="JiTpro" className="h-20" />
+          {companyName && <div className="mt-[2px] text-[9px] text-slate-500">{companyName}</div>}
         </div>
       )}
       <button

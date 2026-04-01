@@ -77,9 +77,6 @@ export function Dashboard() {
                   <h3 className="font-semibold text-slate-900">
                     {c.display_name || c.legal_name}
                   </h3>
-                  {c.display_name && (
-                    <p className="mt-1 text-sm text-slate-500">{c.legal_name}</p>
-                  )}
                   <span className="mt-3 inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
                     Active
                   </span>
