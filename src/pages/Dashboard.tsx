@@ -4,33 +4,44 @@ import { AppLayout } from '../layouts/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../supabase/client';
 
-interface CompanyRow {
-  company_id: string;
-  companies: {
-    id: string;
-    display_name: string | null;
-    legal_name: string;
-    setup_completed: boolean;
-  };
+interface CompanyInfo {
+  id: string;
+  display_name: string | null;
+  legal_name: string;
+  setup_completed: boolean;
 }
 
 export function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [companies, setCompanies] = useState<CompanyRow[]>([]);
+  const [companies, setCompanies] = useState<CompanyInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
 
     async function loadCompanies() {
-      const { data, error } = await supabase
+      // Step 1: Get company IDs for this user
+      const { data: userRows, error: userError } = await supabase
         .from('users')
-        .select('company_id, companies(id, display_name, legal_name, setup_completed)')
+        .select('company_id')
         .eq('auth_id', user!.id);
 
-      if (!error && data) {
-        setCompanies(data as unknown as CompanyRow[]);
+      if (userError || !userRows || userRows.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const companyIds = userRows.map((r) => r.company_id);
+
+      // Step 2: Get company details
+      const { data: companyRows, error: companyError } = await supabase
+        .from('companies')
+        .select('id, display_name, legal_name, setup_completed')
+        .in('id', companyIds);
+
+      if (!companyError && companyRows) {
+        setCompanies(companyRows);
       }
       setLoading(false);
     }
@@ -38,8 +49,8 @@ export function Dashboard() {
     loadCompanies();
   }, [user]);
 
-  const completedCompanies = companies.filter((c) => c.companies?.setup_completed);
-  const pendingCompanies = companies.filter((c) => c.companies && !c.companies.setup_completed);
+  const completedCompanies = companies.filter((c) => c.setup_completed);
+  const pendingCompanies = companies.filter((c) => !c.setup_completed);
 
   return (
     <AppLayout pageTitle="Dashboard">
@@ -59,14 +70,16 @@ export function Dashboard() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
               {completedCompanies.map((c) => (
                 <button
-                  key={c.company_id}
+                  key={c.id}
                   onClick={() => navigate('/app/home')}
                   className="rounded-lg bg-white p-6 shadow-sm border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all text-left"
                 >
                   <h3 className="font-semibold text-slate-900">
-                    {c.companies.display_name || c.companies.legal_name}
+                    {c.display_name || c.legal_name}
                   </h3>
-                  <p className="mt-1 text-sm text-slate-500">{c.companies.legal_name}</p>
+                  {c.display_name && (
+                    <p className="mt-1 text-sm text-slate-500">{c.legal_name}</p>
+                  )}
                   <span className="mt-3 inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
                     Active
                   </span>
@@ -80,12 +93,12 @@ export function Dashboard() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
               {pendingCompanies.map((c) => (
                 <button
-                  key={c.company_id}
+                  key={c.id}
                   onClick={() => navigate('/setup')}
                   className="rounded-lg bg-white p-6 shadow-sm border border-amber-200 hover:border-amber-300 hover:shadow-md transition-all text-left"
                 >
                   <h3 className="font-semibold text-slate-900">
-                    {c.companies.display_name || c.companies.legal_name}
+                    {c.display_name || c.legal_name}
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">Setup incomplete</p>
                   <span className="mt-3 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
