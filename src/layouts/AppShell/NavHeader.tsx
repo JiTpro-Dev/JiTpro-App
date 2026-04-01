@@ -13,9 +13,9 @@ export function NavHeader({ isCollapsed, onToggleCollapse, companyName }: NavHea
       {isCollapsed ? (
         <img src={jitproLogo} alt="JiTpro" className="mx-auto h-6" />
       ) : (
-        <div>
-          <img src={jitproLogo} alt="JiTpro" className="h-20" />
-          {companyName && <div className="mt-[2px] text-[9px] text-slate-500">{companyName}</div>}
+        <div className="text-center">
+          <img src={jitproLogo} alt="JiTpro" className="mx-auto h-20" />
+          {companyName && <div className="mt-1 text-[11px] font-semibold text-amber-500">{companyName}</div>}
         </div>
       )}
       <button
