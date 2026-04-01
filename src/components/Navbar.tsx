@@ -1,19 +1,15 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import jitproLogo from '../assets/jitpro_amber_stripped.svg';
 
 export function Navbar({ pageTitle }: { pageTitle?: string }) {
   const { logout } = useAuth();
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
-  const [showCompleted, setShowCompleted] = useState(false);
 
   const handleLogout = async () => {
     await logout();
   };
-
-  // TODO: Replace with real completed projects from Supabase
-  const completedProjects: { id: string; name: string }[] = [];
 
   const navButtonClass =
     'rounded-md px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors';
@@ -22,55 +18,22 @@ export function Navbar({ pageTitle }: { pageTitle?: string }) {
     <nav className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
-          <img src={`${import.meta.env.BASE_URL}JiTpro.jpg`} alt="JiTpro" className="h-12" />
+          <img src={jitproLogo} alt="JiTpro" className="h-12" />
           {pageTitle && (
             <span className="text-lg font-semibold text-slate-900">{pageTitle}</span>
           )}
         </div>
         <div className="flex items-center gap-4">
           {isDashboard && (
-            <>
-              <Link to="/company/setup" className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
-                Launch App
-              </Link>
-              <Link to="/demo" className={navButtonClass}>
-                View Demo
-              </Link>
-            </>
+            <Link to="/demo" className={navButtonClass}>
+              View Demo
+            </Link>
           )}
           {!isDashboard && (
             <Link to="/dashboard" className={navButtonClass}>
-              Company Dashboard
+              Dashboard
             </Link>
           )}
-          <div
-            className="relative"
-            onMouseEnter={() => setShowCompleted(true)}
-            onMouseLeave={() => setShowCompleted(false)}
-          >
-            <button className={navButtonClass}>
-              Completed Projects ▼
-            </button>
-            {showCompleted && (
-              <div className="absolute right-0 top-full mt-1 w-64 rounded-md border border-slate-200 bg-white py-1 shadow-lg z-50">
-                {completedProjects.length === 0 ? (
-                  <span className="block px-4 py-2 text-sm text-slate-400">
-                    No completed projects
-                  </span>
-                ) : (
-                  completedProjects.map((project) => (
-                    <Link
-                      key={project.id}
-                      to={`/project/${project.id}`}
-                      className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                    >
-                      {project.name}
-                    </Link>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
           <button
             onClick={handleLogout}
             className={navButtonClass}
