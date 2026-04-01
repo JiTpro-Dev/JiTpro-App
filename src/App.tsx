@@ -15,6 +15,7 @@ import { ProcurementSchedule } from './pages/demos/ProcurementSchedule';
 import { AppShell } from './layouts/AppShell/AppShell';
 import { CompanyHome } from './pages/app/CompanyHome';
 import { SetupWizard } from './pages/setup/SetupWizard';
+import { ProjectHome } from './pages/app/ProjectHome';
 import { ScopeBuilder } from './pages/app/pre-bid/ScopeBuilder';
 import { SelectionRegister } from './pages/app/pre-bid/SelectionRegister';
 
@@ -99,8 +100,9 @@ function App() {
             }
           >
             <Route path="home" element={<CompanyHome />} />
-            <Route path="pre-bid/scope-builder" element={<ScopeBuilder />} />
-            <Route path="pre-bid/selection-register" element={<SelectionRegister />} />
+            <Route path="project/:projectId/home" element={<ProjectHome />} />
+            <Route path="project/:projectId/scope-builder" element={<ScopeBuilder />} />
+            <Route path="project/:projectId/selection-register" element={<SelectionRegister />} />
             <Route index element={<Navigate to="home" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />

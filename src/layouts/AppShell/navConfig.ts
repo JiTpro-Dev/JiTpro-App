@@ -2,6 +2,7 @@ import {
   Home, FolderKanban, ClipboardList, ListChecks, Users, Building2,
   Hash, Calendar, LayoutTemplate, CreditCard, Settings, LayoutDashboard,
   Package, GanttChart, MessageSquare, FileText, UserCog, GitCompare, BarChart3,
+  Lock,
 } from 'lucide-react';
 import type { NavGroupConfig } from './types';
 
@@ -11,13 +12,6 @@ export const companyNavGroups: NavGroupConfig[] = [
     items: [
       { label: 'Home', path: '/app/home', icon: Home },
       { label: 'Projects', path: '/app/projects', icon: FolderKanban },
-    ],
-  },
-  {
-    label: 'Pre-bid Tools',
-    items: [
-      { label: 'Scope Builder', path: '/app/pre-bid/scope-builder', icon: ClipboardList },
-      { label: 'Selection Register', path: '/app/pre-bid/selection-register', icon: ListChecks },
     ],
   },
   {
@@ -47,13 +41,25 @@ export const companyAdminItems: NavGroupConfig = {
 
 export const projectNavGroups: NavGroupConfig[] = [
   {
-    label: 'Work',
+    label: 'Project',
     items: [
-      { label: 'Overview', path: 'overview', icon: LayoutDashboard },
-      { label: 'Items', path: 'items', icon: Package },
-      { label: 'Schedule', path: 'schedule', icon: GanttChart },
-      { label: 'Requests', path: 'requests', icon: MessageSquare },
-      { label: 'Documents', path: 'documents', icon: FileText },
+      { label: 'Home', path: 'home', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'Core',
+    items: [
+      { label: 'Scope Builder', path: 'scope-builder', icon: ClipboardList },
+      { label: 'Spec Register', path: 'selection-register', icon: ListChecks },
+    ],
+  },
+  {
+    label: 'Control Tower',
+    items: [
+      { label: 'Procurement', path: 'procurement', icon: Package, disabled: true },
+      { label: 'Schedule', path: 'schedule', icon: GanttChart, disabled: true },
+      { label: 'Requests', path: 'requests', icon: MessageSquare, disabled: true },
+      { label: 'Documents', path: 'documents', icon: FileText, disabled: true },
     ],
   },
   {

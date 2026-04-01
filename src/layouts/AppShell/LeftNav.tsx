@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { NavHeader } from './NavHeader';
 import { NavGroup } from './NavGroup';
 import { ProjectSwitcher } from './ProjectSwitcher';
@@ -10,10 +10,21 @@ interface LeftNavProps {
 }
 
 export function LeftNav({ isCollapsed, onToggleCollapse }: LeftNavProps) {
-  const { projectId } = useParams();
+  const location = useLocation();
+  const projectMatch = location.pathname.match(/\/app\/project\/([^/]+)/);
+  const projectId = projectMatch?.[1] ?? null;
   const isProjectContext = Boolean(projectId);
 
-  const navGroups = isProjectContext ? projectNavGroups : companyNavGroups;
+  const projectBase = projectId ? `/app/project/${projectId}` : '';
+  const navGroups = isProjectContext
+    ? projectNavGroups.map((group) => ({
+        ...group,
+        items: group.items.map((item) => ({
+          ...item,
+          path: `${projectBase}/${item.path}`,
+        })),
+      }))
+    : companyNavGroups;
 
   return (
     <nav

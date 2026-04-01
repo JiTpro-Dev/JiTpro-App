@@ -4,6 +4,7 @@ export interface NavItemConfig {
   label: string;
   path: string;
   icon: LucideIcon;
+  disabled?: boolean;
 }
 
 export interface NavGroupConfig {

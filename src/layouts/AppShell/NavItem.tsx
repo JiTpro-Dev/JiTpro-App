@@ -10,6 +10,18 @@ interface NavItemProps {
 export function NavItem({ item, isCollapsed }: NavItemProps) {
   const Icon = item.icon;
 
+  if (item.disabled) {
+    return (
+      <div
+        className={`flex items-center gap-3 px-4 py-[7px] text-[11px] border-l-2 border-transparent text-slate-600 cursor-not-allowed${isCollapsed ? ' justify-center px-0' : ''}`}
+        title={isCollapsed ? item.label : 'Coming soon'}
+      >
+        <Icon size={16} className="flex-shrink-0" />
+        {!isCollapsed && <span>{item.label}</span>}
+      </div>
+    );
+  }
+
   return (
     <NavLink
       to={item.path}
