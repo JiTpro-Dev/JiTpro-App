@@ -47,7 +47,7 @@ export function AppShell() {
     <div className="flex h-screen overflow-hidden">
       <LeftNav isCollapsed={isCollapsed} onToggleCollapse={handleToggleCollapse} companyName={companyName} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <TopBar />
+        <TopBar companyName={companyName} />
         <main className="flex-1 overflow-y-auto bg-slate-50">
           <Outlet />
         </main>

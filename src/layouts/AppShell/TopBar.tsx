@@ -35,13 +35,10 @@ function getCreateLabel(pathname: string, isProjectContext: boolean): string {
   return '+ Create Item';
 }
 
-export function TopBar() {
+export function TopBar({ companyName }: { companyName: string }) {
   const location = useLocation();
   const { projectId } = useParams();
   const isProjectContext = Boolean(projectId);
-
-  // Build breadcrumb segments
-  const companyName = 'Kaufman Construction';
   const segments = location.pathname.replace('/app/', '').split('/').filter(Boolean);
   const lastSegment = segments[segments.length - 1] || 'home';
   const currentLabel = routeLabels[lastSegment] || lastSegment;
