@@ -10,10 +10,13 @@ import { ProjectInformation } from './pages/ProjectInformation';
 import { ProcurementTimeline } from './pages/demos/ProcurementTimeline';
 import { ViewProcurementTimeline } from './pages/demos/ViewProcurementTimeline';
 import { ProcurementSchedule } from './pages/demos/ProcurementSchedule';
-import { CompanySetup } from './pages/CompanySetup';
+// Old wizard archived — new wizard lives at /setup
+// import { CompanySetup } from './pages/CompanySetup';
 import { AppShell } from './layouts/AppShell/AppShell';
 import { CompanyHome } from './pages/app/CompanyHome';
 import { SetupWizard } from './pages/setup/SetupWizard';
+import { ScopeBuilder } from './pages/app/pre-bid/ScopeBuilder';
+import { SelectionRegister } from './pages/app/pre-bid/SelectionRegister';
 
 function App() {
   return (
@@ -62,14 +65,7 @@ function App() {
               </RequireAuth>
             }
           />
-          <Route
-            path="/company/setup"
-            element={
-              <RequireAuth>
-                <CompanySetup />
-              </RequireAuth>
-            }
-          />
+          {/* Old wizard archived — use /setup instead */}
           <Route
             path="/project/new"
             element={
@@ -103,6 +99,8 @@ function App() {
             }
           >
             <Route path="home" element={<CompanyHome />} />
+            <Route path="pre-bid/scope-builder" element={<ScopeBuilder />} />
+            <Route path="pre-bid/selection-register" element={<SelectionRegister />} />
             <Route index element={<Navigate to="home" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
