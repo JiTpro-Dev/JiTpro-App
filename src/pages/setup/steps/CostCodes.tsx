@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Upload, Database, SkipForward } from 'lucide-react';
 import type { CostCodeNode } from '../setupTypes';
 
-type CostCodeSource = 'upload' | 'csi' | 'skip' | null;
+type CostCodeSource = 'upload' | 'csi50' | 'csi16' | 'skip' | null;
 
 interface CostCodesProps {
   costCodes: CostCodeNode[];
@@ -63,6 +63,7 @@ function parseCostCodeCSV(text: string): CostCodeNode[] {
 
 export function CostCodes({ costCodes, onCostCodesChange, showNumbers, onShowNumbersChange }: CostCodesProps) {
   const [source, setSource] = useState<CostCodeSource>(costCodes.length > 0 ? 'upload' : null);
+  const [format, setFormat] = useState<'csi50' | 'csi16' | null>(null);
   const [csvError, setCsvError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -96,7 +97,8 @@ export function CostCodes({ costCodes, onCostCodesChange, showNumbers, onShowNum
 
   const sourceCards: { key: CostCodeSource; icon: React.ReactNode; title: string; description: string }[] = [
     { key: 'upload', icon: <Upload size={20} />, title: 'Upload Your Own', description: "Import your company's cost code structure from a CSV file" },
-    { key: 'csi', icon: <Database size={20} />, title: 'Use CSI MasterFormat', description: 'Start with the standard 50-division CSI MasterFormat structure' },
+    { key: 'csi50', icon: <Database size={20} />, title: 'CSI MasterFormat (50-Division)', description: 'The current standard with 50 divisions for detailed organization' },
+    { key: 'csi16', icon: <Database size={20} />, title: 'CSI MasterFormat (16-Division)', description: 'The legacy 16-division format still used by many contractors' },
     { key: 'skip', icon: <SkipForward size={20} />, title: 'Skip for Now', description: 'Set up cost codes later from Company Settings' },
   ];
 
@@ -109,7 +111,7 @@ export function CostCodes({ costCodes, onCostCodesChange, showNumbers, onShowNum
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2">
         {sourceCards.map((card) => (
           <button
             key={card.key}
@@ -145,7 +147,7 @@ export function CostCodes({ costCodes, onCostCodesChange, showNumbers, onShowNum
         </div>
       )}
 
-      {source === 'csi' && costCodes.length === 0 && (
+      {source === 'csi50' && costCodes.length === 0 && (
         <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-4">
           <p className="text-sm text-slate-700">
             The CSI MasterFormat 50-division structure will be loaded with all divisions, sections, subsections, and paragraphs. You can customize this later from Company Settings.
@@ -155,9 +157,26 @@ export function CostCodes({ costCodes, onCostCodesChange, showNumbers, onShowNum
               // Placeholder: in production, load from Supabase or bundled JSON
               onCostCodesChange([{ id: 'csi-placeholder', code: '01 00 00', title: 'General Requirements', level: 1, parentId: null, sortOrder: 0 }]);
             }}
-            className="mt-3 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-colors"
+            className="mt-3 rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
           >
-            Load CSI MasterFormat
+            Load 50-Division MasterFormat
+          </button>
+        </div>
+      )}
+
+      {source === 'csi16' && costCodes.length === 0 && (
+        <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm text-slate-700">
+            The legacy 16-division MasterFormat structure will be loaded. This is the traditional format many contractors still use (Divisions 1–16). You can customize this later from Company Settings.
+          </p>
+          <button
+            onClick={() => {
+              // Placeholder: in production, load from Supabase or bundled JSON
+              onCostCodesChange([{ id: 'csi16-placeholder', code: '01', title: 'General Requirements', level: 1, parentId: null, sortOrder: 0 }]);
+            }}
+            className="mt-3 rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
+          >
+            Load 16-Division MasterFormat
           </button>
         </div>
       )}
@@ -183,27 +202,29 @@ export function CostCodes({ costCodes, onCostCodesChange, showNumbers, onShowNum
       )}
 
       {source !== 'skip' && source !== null && (
-        <div className="mt-6 flex items-center gap-3">
-          <button
-            onClick={() => onShowNumbersChange(!showNumbers)}
-            className={`relative h-6 w-11 rounded-full transition-colors ${
-              showNumbers ? 'bg-slate-900' : 'bg-slate-300'
-            }`}
-            role="switch"
-            aria-checked={showNumbers}
-            aria-label="Show cost code numbers"
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                showNumbers ? 'translate-x-5' : 'translate-x-0'
+        <div className="mt-6 rounded-md border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onShowNumbersChange(!showNumbers)}
+              className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors ${
+                showNumbers ? 'bg-slate-800' : 'bg-slate-300'
               }`}
-            />
-          </button>
-          <div>
-            <span className="text-sm font-medium text-slate-700">Show cost code numbers</span>
-            <p className="text-xs text-slate-500">
-              When off, cost code descriptions are displayed without numbering. Descriptions remain in standard sort order.
-            </p>
+              role="switch"
+              aria-checked={showNumbers}
+              aria-label="Show cost code numbers"
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  showNumbers ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+            <div>
+              <span className="text-sm font-medium text-slate-700">Show numeric cost code values (company default)</span>
+              <p className="text-xs text-slate-500">
+                Sets the default for all projects. When off, only descriptions are shown. Project managers can override this setting at the project level.
+              </p>
+            </div>
           </div>
         </div>
       )}
