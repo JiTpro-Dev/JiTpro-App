@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import jitproLogo from '../assets/JiTpro_Amber_white_text.svg';
 
 interface SetupStep {
   key: string;
@@ -14,6 +15,7 @@ interface SetupLayoutProps {
   onNext: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
+  saving?: boolean;
 }
 
 export function SetupLayout({
@@ -25,18 +27,20 @@ export function SetupLayout({
   onNext,
   isFirstStep,
   isLastStep,
+  saving = false,
 }: SetupLayoutProps) {
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-3xl px-6 py-8">
-        {/* Logo */}
-        <div className="mb-6 text-center">
-          <img
-            src={`${import.meta.env.BASE_URL}JiTpro.jpg`}
-            alt="JiTpro"
-            className="mx-auto h-8"
-          />
-        </div>
+      {/* Banner */}
+      <div className="flex w-full items-center justify-center py-4" style={{ backgroundColor: 'rgb(30, 41, 59)' }}>
+        <img
+          src={jitproLogo}
+          alt="JiTpro - Just in Time Procurement"
+          className="h-36"
+        />
+      </div>
+
+      <div className="mx-auto max-w-4xl px-6 py-8">
 
         {/* Step indicator */}
         <div className="mb-6">
@@ -47,7 +51,7 @@ export function SetupLayout({
                 onClick={() => i <= currentStep && onStepClick(i)}
                 className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                   i === currentStep
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-slate-800 text-white'
                     : i < currentStep
                     ? 'bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer'
                     : 'bg-slate-50 text-slate-400 cursor-default'
@@ -79,9 +83,10 @@ export function SetupLayout({
             </div>
             <button
               onClick={onNext}
-              className="rounded-md bg-slate-900 px-6 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-colors"
+              disabled={saving}
+              className="rounded-md bg-slate-800 px-6 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {isLastStep ? 'Complete Setup' : 'Save & Continue'}
+              {saving ? 'Saving...' : isLastStep ? 'Complete Setup' : 'Save & Continue'}
             </button>
           </div>
         </div>
