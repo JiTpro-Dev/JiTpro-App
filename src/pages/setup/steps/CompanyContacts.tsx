@@ -147,6 +147,8 @@ export function CompanyContacts({ contacts, onContactsChange }: CompanyContactsP
     setShowManualForm(false);
   };
 
+  const hasUnsavedFormData = showManualForm && (manualFirst.trim() || manualLast.trim() || manualEmail.trim());
+
   const errorCount = contacts.filter((c) => c.errors.length > 0).length;
   const validCount = contacts.filter((c) => c.errors.length === 0).length;
   const duplicateEmails = contacts
@@ -208,6 +210,15 @@ export function CompanyContacts({ contacts, onContactsChange }: CompanyContactsP
         <span className="text-xs text-slate-400">or add contacts individually</span>
         <div className="flex-1 border-t border-slate-200" />
       </div>
+
+      {/* Unsaved contact warning */}
+      {hasUnsavedFormData && (
+        <div className="mb-4 rounded-md bg-amber-50 border border-amber-200 px-4 py-3">
+          <p className="text-sm text-amber-700">
+            You have an unsaved contact below. Click <strong>Add Contact</strong> before clicking Save & Continue, or your entry will be lost.
+          </p>
+        </div>
+      )}
 
       {/* Manual Add */}
       {!showManualForm ? (
@@ -275,7 +286,7 @@ export function CompanyContacts({ contacts, onContactsChange }: CompanyContactsP
           <div className="mt-4 flex items-center gap-3">
             <button
               onClick={addManualContact}
-              className="rounded-md bg-slate-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-800 transition-colors"
+              className="rounded-md bg-slate-800 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-700 transition-colors"
             >
               Add Contact
             </button>

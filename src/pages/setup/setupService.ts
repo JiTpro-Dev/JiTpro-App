@@ -151,19 +151,21 @@ export async function saveCompanyContacts(
     .eq('company_id', companyId);
 
   if (contacts.length > 0) {
-    const contactRows = contacts.map((c) => ({
-      company_id: companyId,
-      first_name: c.first_name,
-      last_name: c.last_name,
-      title: c.title || null,
-      company_organization: c.company_organization || null,
-      email: c.email || null,
-      phone: c.phone || null,
-      address: c.address || null,
-      contact_type: c.contact_type || null,
-      role_category: c.role_category || null,
-      notes: c.notes || null,
-    }));
+    const contactRows = contacts
+      .filter((c) => c.first_name && c.last_name)
+      .map((c) => ({
+        company_id: companyId,
+        first_name: c.first_name,
+        last_name: c.last_name,
+        title: c.title || null,
+        company_organization: c.company_organization || null,
+        email: c.email || null,
+        phone: c.phone || null,
+        address: c.address || null,
+        contact_type: c.contact_type || null,
+        role_category: c.role_category || null,
+        notes: c.notes || null,
+      }));
 
     const { error } = await supabase
       .from('company_contacts')
