@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from '../layouts/AuthLayout';
+import { supabase } from '../../supabase/client';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -19,7 +20,23 @@ export function Login() {
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+
+      // Check if user has completed company setup
+      const { data: userRecord } = await supabase
+        .from('users')
+        .select('company_id, companies(setup_completed)')
+        .eq('auth_id', (await supabase.auth.getUser()).data.user?.id)
+        .maybeSingle();
+
+      if (userRecord?.companies?.setup_completed) {
+        navigate('/app/home');
+      } else if (userRecord?.company_id) {
+        // Has company but setup not complete — resume setup
+        navigate('/setup');
+      } else {
+        // No company yet — start setup
+        navigate('/setup');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to log in');
     } finally {
@@ -88,7 +105,7 @@ export function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50 transition-colors"
+          className="w-full rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
         >
           {loading ? 'Logging in...' : 'Log In'}
         </button>
