@@ -7,76 +7,30 @@ import type { CompanyProfileData } from './steps/CompanyProfile';
 import type { CompanyAdminData } from './steps/CompanyAdmin';
 import type { Holiday, WorkWeek, ContactRow, CostCodeNode, PclTemplate } from './setupTypes';
 
-// Step 1: Create the company and the primary admin user record
+// Step 1: Create or update the company using the security definer function.
+// This bypasses RLS for the initial setup (chicken-and-egg problem).
+// The function also creates the primary admin user record if it doesn't exist.
 export async function saveCompanyProfile(
-  data: CompanyProfileData,
-  authUserId: string
+  data: CompanyProfileData
 ): Promise<string> {
-  // Create company
-  const { data: company, error: companyError } = await supabase
-    .from('companies')
-    .insert({
-      legal_name: data.legalName,
-      display_name: data.displayName || null,
-      address: data.address || null,
-      city: data.city || null,
-      state: data.state || null,
-      zip: data.zip || null,
-      license_number: data.licenseNumber || null,
-      states_licensed_in: data.statesLicensedIn,
-      company_phone: data.companyPhone || null,
-      company_email: data.companyEmail || null,
-      website: data.website || null,
-      timezone: data.timezone,
-    })
-    .select('id')
-    .single();
-
-  if (companyError) throw new Error(`Failed to save company: ${companyError.message}`);
-
-  const companyId = company.id;
-
-  // Create the primary admin user record (links auth user to company)
-  const { error: userError } = await supabase
-    .from('users')
-    .insert({
-      auth_id: authUserId,
-      company_id: companyId,
-      first_name: 'Admin',
-      last_name: '(Setup)',
-      email: 'pending@setup',
-      role: 'primary_admin',
+  const { data: companyId, error } = await supabase
+    .rpc('setup_company', {
+      p_legal_name: data.legalName,
+      p_display_name: data.displayName || null,
+      p_address: data.address || null,
+      p_city: data.city || null,
+      p_state: data.state || null,
+      p_zip: data.zip || null,
+      p_license_number: data.licenseNumber || null,
+      p_states_licensed_in: data.statesLicensedIn,
+      p_company_phone: data.companyPhone || null,
+      p_company_email: data.companyEmail || null,
+      p_website: data.website || null,
+      p_timezone: data.timezone,
     });
 
-  if (userError) throw new Error(`Failed to create user record: ${userError.message}`);
-
+  if (error) throw new Error(`Failed to save company: ${error.message}`);
   return companyId;
-}
-
-// Step 1 (update): If company already exists, update it
-export async function updateCompanyProfile(
-  companyId: string,
-  data: CompanyProfileData
-): Promise<void> {
-  const { error } = await supabase
-    .from('companies')
-    .update({
-      legal_name: data.legalName,
-      display_name: data.displayName || null,
-      address: data.address || null,
-      city: data.city || null,
-      state: data.state || null,
-      zip: data.zip || null,
-      license_number: data.licenseNumber || null,
-      states_licensed_in: data.statesLicensedIn,
-      company_phone: data.companyPhone || null,
-      company_email: data.companyEmail || null,
-      website: data.website || null,
-      timezone: data.timezone,
-    })
-    .eq('id', companyId);
-
-  if (error) throw new Error(`Failed to update company: ${error.message}`);
 }
 
 // Step 2: Save admin info (update the primary admin user record + optional secondary)

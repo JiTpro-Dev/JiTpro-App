@@ -11,7 +11,6 @@ import { PclTemplates } from './steps/PclTemplates';
 import { useAuth } from '../../context/AuthContext';
 import {
   saveCompanyProfile,
-  updateCompanyProfile,
   saveCompanyAdmin,
   saveCompanyCalendar,
   saveCompanyContacts,
@@ -75,13 +74,10 @@ export function SetupWizard() {
     try {
       switch (currentStep) {
         case 0: {
-          // Step 1: Company Profile
-          if (companyId) {
-            await updateCompanyProfile(companyId, profileData);
-          } else {
-            const newId = await saveCompanyProfile(profileData, user.id);
-            setCompanyId(newId);
-          }
+          // Step 1: Company Profile (uses security definer function)
+          // Handles both create and update — if user already has a company, it updates
+          const id = await saveCompanyProfile(profileData);
+          setCompanyId(id);
           break;
         }
         case 1: {
