@@ -2,7 +2,6 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from '../layouts/AuthLayout';
-import { supabase } from '../../supabase/client';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -20,23 +19,7 @@ export function Login() {
 
     try {
       await login(email, password);
-
-      // Check if user has completed company setup
-      const { data: userRecord } = await supabase
-        .from('users')
-        .select('company_id, companies(setup_completed)')
-        .eq('auth_id', (await supabase.auth.getUser()).data.user?.id)
-        .maybeSingle();
-
-      if (userRecord?.companies?.setup_completed) {
-        navigate('/app/home');
-      } else if (userRecord?.company_id) {
-        // Has company but setup not complete — resume setup
-        navigate('/setup');
-      } else {
-        // No company yet — start setup
-        navigate('/setup');
-      }
+      navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to log in');
     } finally {
