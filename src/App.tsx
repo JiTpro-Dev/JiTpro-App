@@ -16,6 +16,14 @@ import { AppShell } from './layouts/AppShell/AppShell';
 import { CompanyHome } from './pages/app/CompanyHome';
 import { SetupWizard } from './pages/setup/SetupWizard';
 import { ProjectHome } from './pages/app/ProjectHome';
+import { Projects } from './pages/app/Projects';
+import { People } from './pages/app/People';
+import { Organizations } from './pages/app/Organizations';
+import { CostCodes } from './pages/app/CostCodes';
+import { Calendars } from './pages/app/Calendars';
+import { ProjectTemplates } from './pages/app/ProjectTemplates';
+import { Billing } from './pages/app/Billing';
+import { Settings } from './pages/app/Settings';
 import { ScopeBuilder } from './pages/app/pre-bid/ScopeBuilder';
 import { SelectionRegister } from './pages/app/pre-bid/SelectionRegister';
 
@@ -99,7 +107,17 @@ function App() {
               </RequireAuth>
             }
           >
+            {/* Company-level pages */}
             <Route path="home" element={<CompanyHome />} />
+            <Route path="projects" element={<Projects />} />
+            <Route path="people" element={<People />} />
+            <Route path="organizations" element={<Organizations />} />
+            <Route path="cost-codes" element={<CostCodes />} />
+            <Route path="calendars" element={<Calendars />} />
+            <Route path="project-templates" element={<ProjectTemplates />} />
+            <Route path="billing" element={<Billing />} />
+            <Route path="settings" element={<Settings />} />
+            {/* Project-level pages */}
             <Route path="project/:projectId/home" element={<ProjectHome />} />
             <Route path="project/:projectId/scope-builder" element={<ScopeBuilder />} />
             <Route path="project/:projectId/selection-register" element={<SelectionRegister />} />
