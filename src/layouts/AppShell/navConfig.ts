@@ -2,7 +2,6 @@ import {
   Home, FolderKanban, ClipboardList, ListChecks, Users, Building2,
   Hash, Calendar, LayoutTemplate, CreditCard, Settings, LayoutDashboard,
   Package, GanttChart, MessageSquare, FileText, UserCog, GitCompare, BarChart3,
-  Lock,
 } from 'lucide-react';
 import type { NavGroupConfig } from './types';
 

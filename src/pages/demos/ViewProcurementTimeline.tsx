@@ -53,7 +53,7 @@ export function ViewProcurementTimeline() {
           </div>
           <Link
             to="/demo/procurement-timeline"
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-colors"
+            className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
           >
             + Add Item
           </Link>

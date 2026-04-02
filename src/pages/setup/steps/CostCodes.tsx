@@ -63,7 +63,6 @@ function parseCostCodeCSV(text: string): CostCodeNode[] {
 
 export function CostCodes({ costCodes, onCostCodesChange, showNumbers, onShowNumbersChange }: CostCodesProps) {
   const [source, setSource] = useState<CostCodeSource>(costCodes.length > 0 ? 'upload' : null);
-  const [format, setFormat] = useState<'csi50' | 'csi16' | null>(null);
   const [csvError, setCsvError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

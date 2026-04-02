@@ -202,7 +202,7 @@ export function CompanySetup() {
                 onClick={() => setCurrentStep(i)}
                 className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                   i === currentStep
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-slate-800 text-white'
                     : i < currentStep
                     ? 'bg-slate-200 text-slate-700'
                     : 'text-slate-400 bg-slate-50'
@@ -590,7 +590,7 @@ export function CompanySetup() {
                       </button>
                       <button
                         onClick={() => setContactsConfirmed(true)}
-                        className="rounded-md bg-slate-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-800 transition-colors"
+                        className="rounded-md bg-slate-800 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-700 transition-colors"
                       >
                         Confirm Import
                       </button>
@@ -701,7 +701,7 @@ export function CompanySetup() {
             </div>
             <button
               onClick={handleNext}
-              className="rounded-md bg-slate-900 px-6 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-colors"
+              className="rounded-md bg-slate-800 px-6 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
             >
               {currentStep === steps.length - 1 ? 'Complete Setup' : 'Save & Continue'}
             </button>

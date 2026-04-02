@@ -60,7 +60,7 @@ export function HolidayCalendar({ holidays, onHolidaysChange }: HolidayCalendarP
               onClick={() => toggleHoliday(holiday.id)}
               className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
                 holiday.isActive
-                  ? 'bg-slate-900 text-white'
+                  ? 'bg-slate-800 text-white'
                   : 'border-2 border-slate-300 bg-white'
               }`}
               aria-label={`Toggle ${holiday.name}`}
@@ -136,7 +136,7 @@ export function HolidayCalendar({ holidays, onHolidaysChange }: HolidayCalendarP
             <div className="mt-4 flex items-center gap-3">
               <button
                 onClick={addCustomHoliday}
-                className="rounded-md bg-slate-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-800 transition-colors"
+                className="rounded-md bg-slate-800 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-700 transition-colors"
               >
                 Add
               </button>

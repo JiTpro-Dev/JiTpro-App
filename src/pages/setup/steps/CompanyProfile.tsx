@@ -8,7 +8,10 @@ interface CompanyProfileData {
   state: string;
   zip: string;
   licenseNumber: string;
+  statesLicensedIn: string[];
   companyPhone: string;
+  companyEmail: string;
+  website: string;
   timezone: string;
 }
 
@@ -98,7 +101,29 @@ export function CompanyProfile({ data, onChange }: CompanyProfileProps) {
             />
           </div>
           <div>
-            <label className={labelClass}>Phone</label>
+            <label className={labelClass}>State(s) Licensed In</label>
+            <input
+              type="text"
+              value={data.statesLicensedIn.join(', ')}
+              onChange={(e) =>
+                onChange({
+                  ...data,
+                  statesLicensedIn: e.target.value
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                })
+              }
+              placeholder="e.g., CA, NV, AZ"
+              className={inputClass}
+            />
+            <p className="mt-1 text-xs text-slate-400">Separate multiple states with commas</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className={labelClass}>Main Company Phone</label>
             <input
               type="tel"
               value={data.companyPhone}
@@ -107,6 +132,27 @@ export function CompanyProfile({ data, onChange }: CompanyProfileProps) {
               className={inputClass}
             />
           </div>
+          <div>
+            <label className={labelClass}>Company Email</label>
+            <input
+              type="email"
+              value={data.companyEmail}
+              onChange={(e) => update('companyEmail', e.target.value)}
+              placeholder="info@yourcompany.com"
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>Company Website</label>
+          <input
+            type="url"
+            value={data.website}
+            onChange={(e) => update('website', e.target.value)}
+            placeholder="https://www.yourcompany.com"
+            className={inputClass}
+          />
         </div>
 
         <div>

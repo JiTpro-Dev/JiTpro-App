@@ -9,6 +9,26 @@ export interface Holiday {
   isDefault: boolean;
 }
 
+export interface WorkWeek {
+  monday: boolean;
+  tuesday: boolean;
+  wednesday: boolean;
+  thursday: boolean;
+  friday: boolean;
+  saturday: boolean;
+  sunday: boolean;
+}
+
+export const defaultWorkWeek: WorkWeek = {
+  monday: true,
+  tuesday: true,
+  wednesday: true,
+  thursday: true,
+  friday: true,
+  saturday: false,
+  sunday: false,
+};
+
 export interface ContactRow {
   first_name: string;
   last_name: string;
@@ -57,7 +77,9 @@ export const csvTemplateColumns = [
 export const defaultHolidays: Holiday[] = [
   { id: 'newyear', name: "New Year's Day", dateDescription: 'January 1', isRecurring: true, isActive: true, isDefault: true },
   { id: 'mlk', name: 'Martin Luther King Jr. Day', dateDescription: 'Third Monday in January', isRecurring: true, isActive: true, isDefault: true },
+  { id: 'presidents', name: "Presidents' Day", dateDescription: 'Third Monday in February', isRecurring: true, isActive: true, isDefault: true },
   { id: 'memorial', name: 'Memorial Day', dateDescription: 'Last Monday in May', isRecurring: true, isActive: true, isDefault: true },
+  { id: 'kamehameha', name: 'King Kamehameha Day', dateDescription: 'June 11', isRecurring: true, isActive: false, isDefault: true },
   { id: 'independence', name: 'Independence Day', dateDescription: 'July 4', isRecurring: true, isActive: true, isDefault: true },
   { id: 'labor', name: 'Labor Day', dateDescription: 'First Monday in September', isRecurring: true, isActive: true, isDefault: true },
   { id: 'thanksgiving', name: 'Thanksgiving', dateDescription: 'Fourth Thursday in November', isRecurring: true, isActive: true, isDefault: true },

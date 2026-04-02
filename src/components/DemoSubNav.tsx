@@ -47,7 +47,7 @@ export function DemoSubNav() {
                   to={link.path}
                   className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-slate-900 text-white'
+                      ? 'bg-slate-800 text-white'
                       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >

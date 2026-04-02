@@ -398,7 +398,7 @@ export function ProcurementSchedule() {
                 onClick={() => setZoom(z)}
                 className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
                   zoom === z
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-slate-800 text-white'
                     : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
