@@ -1,89 +1,119 @@
-import { useState, useEffect } from 'react';
-import type { CsiDivision, ProcurementItem } from './sampleData';
+import { useState, useEffect, useMemo } from 'react';
+import type { CostCodeNode, ProcurementItem } from './scopeBuilderTypes';
+import { getDescendantIds } from './scopeBuilderTypes';
 import { CsiTree } from './CsiTree';
 import { ItemList } from './ItemList';
 import { AddItemForm } from './AddItemForm';
 
+/** Find the level-1 ancestor of a node by searching the tree. */
+function findDivisionAncestor(roots: CostCodeNode[], targetId: string): CostCodeNode | null {
+  for (const root of roots) {
+    if (root.id === targetId) return root.level === 1 ? root : null;
+    const found = findInSubtree(root, targetId);
+    if (found) return root.level === 1 ? root : null;
+  }
+  return null;
+}
+
+function findInSubtree(node: CostCodeNode, targetId: string): boolean {
+  for (const child of node.children) {
+    if (child.id === targetId) return true;
+    if (findInSubtree(child, targetId)) return true;
+  }
+  return false;
+}
+
+/** Find the first level-2 descendant in a tree (depth-first). */
+function findFirstSelectableChild(node: CostCodeNode): CostCodeNode | null {
+  for (const child of node.children) {
+    if (child.level >= 2) return child;
+    const found = findFirstSelectableChild(child);
+    if (found) return found;
+  }
+  return null;
+}
+
 interface ScopeBuilderSplitPanelProps {
-  divisions: CsiDivision[];
+  tree: CostCodeNode[];
   items: ProcurementItem[];
-  onItemsChange: (items: ProcurementItem[]) => void;
-  initialDivision: string;
+  onCreateItem: (item: Omit<ProcurementItem, 'id' | 'project_id' | 'sort_order'>) => Promise<void>;
+  onUpdateItem: (itemId: string, updates: Partial<Pick<ProcurementItem, 'name' | 'description' | 'status' | 'notes'>>) => Promise<void>;
+  initialDivisionId: string;
   onBackToCards: () => void;
 }
 
 export function ScopeBuilderSplitPanel({
-  divisions,
+  tree,
   items,
-  onItemsChange,
-  initialDivision,
+  onCreateItem,
+  onUpdateItem,
+  initialDivisionId,
   onBackToCards,
 }: ScopeBuilderSplitPanelProps) {
-  const [activeDivision, setActiveDivision] = useState(initialDivision);
-  const [activeSubdivision, setActiveSubdivision] = useState('');
+  const [selectedNode, setSelectedNode] = useState<CostCodeNode | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
-  // Auto-select first subdivision when division changes
+  // Auto-select first level-2 child of the initial division on mount
   useEffect(() => {
-    const division = divisions.find((d) => d.code === activeDivision);
-    if (division && division.subdivisions.length > 0) {
-      setActiveSubdivision(division.subdivisions[0].code);
-    } else {
-      setActiveSubdivision('');
+    const division = tree.find((d) => d.id === initialDivisionId);
+    if (division) {
+      const firstChild = findFirstSelectableChild(division);
+      setSelectedNode(firstChild);
     }
-    setShowAddForm(false);
-  }, [activeDivision, divisions]);
+  }, [initialDivisionId, tree]);
 
-  const handleSelectDivision = (code: string) => {
-    setActiveDivision(code);
-  };
-
-  const handleSelectSubdivision = (code: string) => {
-    setActiveSubdivision(code);
+  const handleSelectNode = (node: CostCodeNode) => {
+    setSelectedNode(node);
     setShowAddForm(false);
   };
 
-  const handleAddItem = (newItem: ProcurementItem) => {
-    onItemsChange([...items, newItem]);
+  const handleAddItem = async (newItem: Omit<ProcurementItem, 'id' | 'project_id' | 'sort_order'>) => {
+    await onCreateItem(newItem);
     setShowAddForm(false);
   };
 
-  // Items for the active subdivision
-  const filteredItems = items.filter((item) => item.csiCode === activeSubdivision);
-
-  // Resolve subdivision name for display
-  const activeDivisionObj = divisions.find((d) => d.code === activeDivision);
-  const activeSubdivisionObj = activeDivisionObj?.subdivisions.find(
-    (s) => s.code === activeSubdivision
+  // Filter items: show items whose cost_code_id is the selected node or any descendant
+  const descendantIds = useMemo(
+    () => (selectedNode ? new Set(getDescendantIds(selectedNode)) : new Set<string>()),
+    [selectedNode]
   );
+  const filteredItems = items.filter((item) => item.cost_code_id && descendantIds.has(item.cost_code_id));
+
+  // Resolve the division code by walking up the tree to the level-1 ancestor
+  const selectedDivisionCode = useMemo(() => {
+    if (!selectedNode) return '';
+    if (selectedNode.level === 1) return selectedNode.code;
+    const division = findDivisionAncestor(tree, selectedNode.id);
+    return division?.code ?? '';
+  }, [selectedNode, tree]);
 
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Left sidebar: CSI tree */}
       <CsiTree
-        divisions={divisions}
-        activeDivision={activeDivision}
-        activeSubdivision={activeSubdivision}
-        onSelectDivision={handleSelectDivision}
-        onSelectSubdivision={handleSelectSubdivision}
+        tree={tree}
+        selectedNodeId={selectedNode?.id ?? null}
+        onSelectNode={handleSelectNode}
         onBackToCards={onBackToCards}
       />
 
       {/* Right panel */}
       <div className="flex flex-1 flex-col overflow-hidden bg-slate-50">
-        {activeSubdivisionObj ? (
+        {selectedNode ? (
           <>
             <ItemList
               items={filteredItems}
-              subdivisionCode={activeSubdivisionObj.code}
-              subdivisionName={activeSubdivisionObj.name}
+              subdivisionCode={selectedNode.code}
+              subdivisionName={selectedNode.title}
               onAddItem={() => setShowAddForm(true)}
+              onUpdateItem={onUpdateItem}
             />
             {showAddForm && (
               <AddItemForm
-                csiCode={activeSubdivision}
-                csiDivision={activeDivision}
-                csiLabel={activeSubdivisionObj.name}
+                csiCode={selectedNode.code}
+                csiDivision={selectedDivisionCode}
+                csiLabel={selectedNode.title}
+                costCodeId={selectedNode.id}
                 onSave={handleAddItem}
                 onCancel={() => setShowAddForm(false)}
               />
@@ -91,7 +121,7 @@ export function ScopeBuilderSplitPanel({
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center text-[14px] text-slate-400">
-            Select a subdivision from the left.
+            Select a cost code from the left.
           </div>
         )}
       </div>

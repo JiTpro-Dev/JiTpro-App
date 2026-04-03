@@ -141,23 +141,34 @@ alter table public.procurement_item_submittals enable row level security;
 
 -- Vendors scoped to company
 create policy "Read own company vendors" on public.vendors
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 
 create policy "Manage own company vendors" on public.vendors
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 -- Procurement items scoped to company's projects
 create policy "Read own procurement items" on public.procurement_items
   for select using (
     project_id in (
-      select id from public.projects where company_id = public.current_company_id()
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
     )
   );
 
 create policy "Manage own procurement items" on public.procurement_items
-  for all using (
+  for all
+  using (
     project_id in (
-      select id from public.projects where company_id = public.current_company_id()
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
+    )
+  )
+  with check (
+    project_id in (
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
     )
   );
 
@@ -167,16 +178,24 @@ create policy "Read own item locations" on public.procurement_item_locations
     item_id in (
       select pi.id from public.procurement_items pi
       join public.projects p on pi.project_id = p.id
-      where p.company_id = public.current_company_id()
+      where public.user_belongs_to_company(p.company_id)
     )
   );
 
 create policy "Manage own item locations" on public.procurement_item_locations
-  for all using (
+  for all
+  using (
     item_id in (
       select pi.id from public.procurement_items pi
       join public.projects p on pi.project_id = p.id
-      where p.company_id = public.current_company_id()
+      where public.user_belongs_to_company(p.company_id)
+    )
+  )
+  with check (
+    item_id in (
+      select pi.id from public.procurement_items pi
+      join public.projects p on pi.project_id = p.id
+      where public.user_belongs_to_company(p.company_id)
     )
   );
 
@@ -186,15 +205,23 @@ create policy "Read own item submittals" on public.procurement_item_submittals
     item_id in (
       select pi.id from public.procurement_items pi
       join public.projects p on pi.project_id = p.id
-      where p.company_id = public.current_company_id()
+      where public.user_belongs_to_company(p.company_id)
     )
   );
 
 create policy "Manage own item submittals" on public.procurement_item_submittals
-  for all using (
+  for all
+  using (
     item_id in (
       select pi.id from public.procurement_items pi
       join public.projects p on pi.project_id = p.id
-      where p.company_id = public.current_company_id()
+      where public.user_belongs_to_company(p.company_id)
+    )
+  )
+  with check (
+    item_id in (
+      select pi.id from public.procurement_items pi
+      join public.projects p on pi.project_id = p.id
+      where public.user_belongs_to_company(p.company_id)
     )
   );

@@ -10,7 +10,7 @@ drop table if exists public.profiles cascade;
 
 create table public.users (
   id uuid primary key default gen_random_uuid(),
-  auth_id uuid references auth.users(id) on delete cascade unique,
+  auth_id uuid references auth.users(id) on delete cascade,
   company_id uuid references public.companies(id) on delete cascade not null,
 
   -- Identity
@@ -44,6 +44,9 @@ create table public.users (
 create trigger users_updated_at
   before update on public.users
   for each row execute function public.update_updated_at();
+
+-- One user record per auth account per company
+alter table public.users add constraint users_auth_id_company_id_key unique (auth_id, company_id);
 
 -- Indexes
 create index idx_users_company_id on public.users(company_id);

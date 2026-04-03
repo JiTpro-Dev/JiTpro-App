@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { CompanyProvider } from './context/CompanyContext';
 import { RequireAuth } from './auth/requireAuth';
 import { Login } from './pages/Login';
 import { ResetPassword } from './pages/ResetPassword';
@@ -31,6 +32,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <CompanyProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
@@ -100,6 +102,14 @@ function App() {
             }
           />
           <Route
+            path="/setup/:companyId"
+            element={
+              <RequireAuth>
+                <SetupWizard />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/app"
             element={
               <RequireAuth>
@@ -125,6 +135,7 @@ function App() {
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
+        </CompanyProvider>
       </AuthProvider>
     </BrowserRouter>
   );

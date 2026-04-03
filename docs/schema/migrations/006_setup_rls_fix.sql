@@ -16,4 +16,4 @@ create policy "Authenticated users can create own user record"
   with check (auth.uid() is not null);
 
 -- Allow the setup wizard to insert work week, holidays, contacts, cost codes, templates
--- These use current_company_id() which will work after step 1 creates the user record
+-- These use user_belongs_to_company() which will work after step 1 creates the user record

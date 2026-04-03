@@ -2,25 +2,26 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppLayout } from '../layouts/AppLayout';
 import { useAuth } from '../context/AuthContext';
+import { useCompany, type CompanyInfo } from '../context/CompanyContext';
 import { supabase } from '../../supabase/client';
-
-interface CompanyInfo {
-  id: string;
-  display_name: string | null;
-  legal_name: string;
-  setup_completed: boolean;
-}
 
 export function Dashboard() {
   const { user } = useAuth();
+  const { setActiveCompany } = useCompany();
   const navigate = useNavigate();
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
     if (!user) return;
 
     async function loadCompanies() {
+      // Check super admin status from app_metadata
+      const { data: { session } } = await supabase.auth.getSession();
+      const appMeta = session?.user?.app_metadata;
+      setIsSuperAdmin(appMeta?.is_super_admin === true);
+
       // Step 1: Get company IDs for this user
       const { data: userRows, error: userError } = await supabase
         .from('users')
@@ -65,40 +66,42 @@ export function Dashboard() {
         </div>
       ) : (
         <>
-          {/* Completed companies */}
-          {completedCompanies.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+          {/* Setup New Company button — always on top */}
+          {(isSuperAdmin || companies.length === 0) && (
+            <Link
+              to="/setup"
+              className="inline-block rounded-md bg-slate-800 px-6 py-2.5 text-sm font-medium text-white hover:bg-slate-700 transition-colors mb-6"
+            >
+              + Setup New Company
+            </Link>
+          )}
+
+          {/* Company buttons */}
+          {companies.length > 0 && (
+            <div className="flex flex-wrap gap-3">
               {completedCompanies.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => navigate('/app/home')}
-                  className="rounded-lg bg-white p-6 shadow-sm border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all text-left"
+                  onClick={() => {
+                    setActiveCompany(c);
+                    navigate('/app/home');
+                  }}
+                  className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all"
                 >
-                  <h3 className="font-semibold text-slate-900">
-                    {c.display_name || c.legal_name}
-                  </h3>
-                  <span className="mt-3 inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
+                  {c.display_name || c.legal_name}
+                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
                     Active
                   </span>
                 </button>
               ))}
-            </div>
-          )}
-
-          {/* Pending setup companies */}
-          {pendingCompanies.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
               {pendingCompanies.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => navigate('/setup')}
-                  className="rounded-lg bg-white p-6 shadow-sm border border-amber-200 hover:border-amber-300 hover:shadow-md transition-all text-left"
+                  onClick={() => navigate(`/setup/${c.id}`)}
+                  className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 border border-amber-200 hover:border-amber-300 hover:shadow-sm transition-all"
                 >
-                  <h3 className="font-semibold text-slate-900">
-                    {c.display_name || c.legal_name}
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-500">Setup incomplete</p>
-                  <span className="mt-3 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
+                  {c.display_name || c.legal_name}
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
                     Resume Setup
                   </span>
                 </button>
@@ -108,19 +111,11 @@ export function Dashboard() {
 
           {/* No companies message */}
           {companies.length === 0 && (
-            <div className="rounded-lg bg-white p-8 shadow-sm border border-slate-200 text-center mb-6">
+            <div className="rounded-lg bg-white p-8 shadow-sm border border-slate-200 text-center">
               <p className="text-slate-600 mb-2">No companies yet.</p>
-              <p className="text-sm text-slate-400">Click below to set up your first company.</p>
+              <p className="text-sm text-slate-400">Click above to set up your first company.</p>
             </div>
           )}
-
-          {/* Setup New Company button */}
-          <Link
-            to="/setup"
-            className="inline-block rounded-md bg-slate-800 px-6 py-2.5 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
-          >
-            + Setup New Company
-          </Link>
         </>
       )}
     </AppLayout>

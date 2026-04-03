@@ -11,23 +11,29 @@ import type { Holiday, WorkWeek, ContactRow, CostCodeNode, PclTemplate } from '.
 // This bypasses RLS for the initial setup (chicken-and-egg problem).
 // The function also creates the primary admin user record if it doesn't exist.
 export async function saveCompanyProfile(
-  data: CompanyProfileData
+  data: CompanyProfileData,
+  existingCompanyId?: string | null
 ): Promise<string> {
-  const { data: companyId, error } = await supabase
-    .rpc('setup_company', {
-      p_legal_name: data.legalName,
-      p_display_name: data.displayName || null,
-      p_address: data.address || null,
-      p_city: data.city || null,
-      p_state: data.state || null,
-      p_zip: data.zip || null,
-      p_license_number: data.licenseNumber || null,
-      p_states_licensed_in: data.statesLicensedIn,
-      p_company_phone: data.companyPhone || null,
-      p_company_email: data.companyEmail || null,
-      p_website: data.website || null,
-      p_timezone: data.timezone,
-    });
+  const params: Record<string, unknown> = {
+    p_legal_name: data.legalName,
+    p_display_name: data.displayName || null,
+    p_address: data.address || null,
+    p_city: data.city || null,
+    p_state: data.state || null,
+    p_zip: data.zip || null,
+    p_license_number: data.licenseNumber || null,
+    p_states_licensed_in: data.statesLicensedIn,
+    p_company_phone: data.companyPhone || null,
+    p_company_email: data.companyEmail || null,
+    p_website: data.website || null,
+    p_timezone: data.timezone,
+  };
+
+  if (existingCompanyId) {
+    params.p_company_id = existingCompanyId;
+  }
+
+  const { data: companyId, error } = await supabase.rpc('setup_company', params);
 
   if (error) throw new Error(`Failed to save company: ${error.message}`);
   return companyId;
@@ -39,7 +45,7 @@ export async function saveCompanyAdmin(
   authUserId: string,
   data: CompanyAdminData
 ): Promise<void> {
-  // Update the primary admin record created in step 1
+  // Update the primary admin record created in step 1 (scoped to this company)
   const { error: adminError } = await supabase
     .from('users')
     .update({
@@ -49,7 +55,8 @@ export async function saveCompanyAdmin(
       email: data.adminEmail,
       phone: data.adminPhone || null,
     })
-    .eq('auth_id', authUserId);
+    .eq('auth_id', authUserId)
+    .eq('company_id', companyId);
 
   if (adminError) throw new Error(`Failed to save admin: ${adminError.message}`);
 

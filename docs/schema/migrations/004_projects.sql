@@ -88,24 +88,35 @@ alter table public.project_members enable row level security;
 
 -- Company members can see their company's projects
 create policy "Read own company projects" on public.projects
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 
 -- Admins can manage projects
 create policy "Admins manage projects" on public.projects
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 -- Project locations visible to company members
 create policy "Read own project locations" on public.project_locations
   for select using (
     project_id in (
-      select id from public.projects where company_id = public.current_company_id()
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
     )
   );
 
 create policy "Manage own project locations" on public.project_locations
-  for all using (
+  for all
+  using (
     project_id in (
-      select id from public.projects where company_id = public.current_company_id()
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
+    )
+  )
+  with check (
+    project_id in (
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
     )
   );
 
@@ -113,13 +124,22 @@ create policy "Manage own project locations" on public.project_locations
 create policy "Read own project members" on public.project_members
   for select using (
     project_id in (
-      select id from public.projects where company_id = public.current_company_id()
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
     )
   );
 
 create policy "Manage own project members" on public.project_members
-  for all using (
+  for all
+  using (
     project_id in (
-      select id from public.projects where company_id = public.current_company_id()
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
+    )
+  )
+  with check (
+    project_id in (
+      select id from public.projects
+      where public.user_belongs_to_company(company_id)
     )
   );

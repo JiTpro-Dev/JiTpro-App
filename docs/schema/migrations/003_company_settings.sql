@@ -148,54 +148,76 @@ alter table public.cost_codes enable row level security;
 alter table public.pcl_templates enable row level security;
 alter table public.pcl_template_tasks enable row level security;
 
--- Helper: get current user's company_id
-create or replace function public.current_company_id()
-returns uuid as $$
-  select company_id from public.users where auth_id = auth.uid() limit 1;
+-- Helper: check if the current user belongs to a given company
+create or replace function public.user_belongs_to_company(p_company_id uuid)
+returns boolean as $$
+  select exists (
+    select 1 from public.users
+    where auth_id = auth.uid() and company_id = p_company_id
+  );
 $$ language sql stable security definer;
 
 -- Company members can read their company's settings
 create policy "Read own company work week" on public.company_work_weeks
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 
 create policy "Read own company holidays" on public.company_holidays
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 
 create policy "Read own company contacts" on public.company_contacts
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 
 create policy "Read own company cost codes" on public.cost_codes
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 
 create policy "Read own company PCL templates" on public.pcl_templates
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 
 create policy "Read own company PCL tasks" on public.pcl_template_tasks
   for select using (
     template_id in (
-      select id from public.pcl_templates where company_id = public.current_company_id()
+      select id from public.pcl_templates
+      where public.user_belongs_to_company(company_id)
     )
   );
 
 -- Admins can insert/update/delete company settings
 create policy "Admins manage work week" on public.company_work_weeks
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Admins manage holidays" on public.company_holidays
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Admins manage contacts" on public.company_contacts
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Admins manage cost codes" on public.cost_codes
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Admins manage PCL templates" on public.pcl_templates
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Admins manage PCL tasks" on public.pcl_template_tasks
-  for all using (
+  for all
+  using (
     template_id in (
-      select id from public.pcl_templates where company_id = public.current_company_id()
+      select id from public.pcl_templates
+      where public.user_belongs_to_company(company_id)
+    )
+  )
+  with check (
+    template_id in (
+      select id from public.pcl_templates
+      where public.user_belongs_to_company(company_id)
     )
   );

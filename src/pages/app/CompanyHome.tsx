@@ -22,7 +22,7 @@ export function CompanyHome() {
           <div className="space-y-3">
             <ContentCard title="Active Projects">
               <Link
-                to="/app/project/demo-1/home"
+                to="/app/projects"
                 className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:border-slate-300 hover:bg-slate-50"
               >
                 <div>
@@ -42,7 +42,7 @@ export function CompanyHome() {
             <ContentCard title="Quick Actions">
               <div className="space-y-2">
                 <Link
-                  to="/app/project/demo-1/home"
+                  to="/app/projects"
                   className="block w-full rounded-md bg-slate-800 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-slate-700"
                 >
                   Open Project

@@ -1,6 +1,6 @@
 // src/pages/setup/SetupWizard.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { SetupLayout } from '../../layouts/SetupLayout';
 import { CompanyProfile } from './steps/CompanyProfile';
 import { CompanyAdmin } from './steps/CompanyAdmin';
@@ -33,12 +33,13 @@ const steps = [
 
 export function SetupWizard() {
   const navigate = useNavigate();
+  const { companyId: routeCompanyId } = useParams<{ companyId?: string }>();
   const { user } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [companyId, setCompanyId] = useState<string | null>(routeCompanyId ?? null);
 
   // Step 1: Company Profile state
   const [profileData, setProfileData] = useState<CompanyProfileData>({
@@ -76,7 +77,7 @@ export function SetupWizard() {
         case 0: {
           // Step 1: Company Profile (uses security definer function)
           // Handles both create and update — if user already has a company, it updates
-          const id = await saveCompanyProfile(profileData);
+          const id = await saveCompanyProfile(profileData, companyId);
           setCompanyId(id);
           break;
         }
