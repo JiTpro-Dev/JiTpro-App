@@ -1,5 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, LayoutDashboard } from 'lucide-react';
 import { NotificationBell } from '../../components/NotificationBell';
 import { ProfileMenu } from '../../components/ProfileMenu';
 import { useProject } from '../../context/ProjectContext';
@@ -59,6 +59,9 @@ export function TopBar({ companyName }: { companyName: string }) {
 
       {/* Right actions */}
       <div className="flex items-center gap-4">
+        <Link to="/dashboard" className="text-slate-400 hover:text-slate-600 transition-colors" aria-label="Back to Dashboard">
+          <LayoutDashboard size={16} />
+        </Link>
         <NotificationBell />
         <button className="text-slate-400 hover:text-slate-600 transition-colors" aria-label="Help">
           <HelpCircle size={16} />
