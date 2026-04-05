@@ -4,7 +4,7 @@ import { PageHeader } from '../../../components/PageHeader';
 import { useCompany } from '../../../context/CompanyContext';
 import { supabase } from '../../../../supabase/client';
 import type { ProcurementItem, CostCode, CostCodeNode } from './scopeBuilderTypes';
-import { buildCostCodeTree } from './scopeBuilderTypes';
+import { buildCostCodeTree, PROCUREMENT_ITEM_COLUMNS } from './scopeBuilderTypes';
 import { ScopeBuilderCards } from './ScopeBuilderCards';
 import { ScopeBuilderSplitPanel } from './ScopeBuilderSplitPanel';
 
@@ -49,7 +49,7 @@ export function ScopeBuilder() {
 
     const { data, error: err } = await supabase
       .from('procurement_items')
-      .select('id, project_id, name, description, cost_code_id, csi_code, csi_division, csi_label, status, notes, sort_order')
+      .select(PROCUREMENT_ITEM_COLUMNS)
       .eq('project_id', projectId)
       .order('sort_order');
 
@@ -135,6 +135,22 @@ export function ScopeBuilder() {
     setError(null);
   }, []);
 
+  // Delete an item from Supabase
+  const handleDeleteItem = useCallback(async (itemId: string) => {
+    const { error: err } = await supabase
+      .from('procurement_items')
+      .delete()
+      .eq('id', itemId);
+
+    if (err) {
+      setError('Failed to delete item.');
+      return;
+    }
+
+    setItems((prev) => prev.filter((item) => item.id !== itemId));
+    setError(null);
+  }, []);
+
   if (!projectId || !activeCompanyId) {
     return (
       <div className="flex h-full items-center justify-center text-slate-400">
@@ -177,6 +193,7 @@ export function ScopeBuilder() {
           items={items}
           onCreateItem={handleCreateItem}
           onUpdateItem={handleUpdateItem}
+          onDeleteItem={handleDeleteItem}
           initialDivisionId={selectedDivisionId}
           onBackToCards={() => setSelectedDivisionId(null)}
         />

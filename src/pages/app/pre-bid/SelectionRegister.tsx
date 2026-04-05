@@ -1,15 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
-import {
-  sampleItems,
-  sampleDivisions,
-  statusConfig,
-  submittalTypeLabels,
-} from './sampleData';
-import type { ProcurementItem, ItemStatus } from './sampleData';
+import { useCompany } from '../../../context/CompanyContext';
+import { supabase } from '../../../../supabase/client';
+import type { ProcurementItem, ItemStatus, CostCode } from './scopeBuilderTypes';
+import { statusConfig, PROCUREMENT_ITEM_COLUMNS } from './scopeBuilderTypes';
 
-type SortKey = 'name' | 'csiCode' | 'location' | 'vendor' | 'status';
+type SortKey = 'name' | 'csiCode' | 'status';
 type SortDir = 'asc' | 'desc';
 
 const STATUS_ORDER: Record<ItemStatus, number> = {
@@ -19,51 +17,76 @@ const STATUS_ORDER: Record<ItemStatus, number> = {
 };
 
 export function SelectionRegister() {
-  const [items] = useState<ProcurementItem[]>(sampleItems);
+  const { projectId } = useParams<{ projectId: string }>();
+  const { activeCompanyId } = useCompany();
+
+  const [items, setItems] = useState<ProcurementItem[]>([]);
+  const [divisions, setDivisions] = useState<{ code: string; title: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
   const [filterDivision, setFilterDivision] = useState('');
-  const [filterLocation, setFilterLocation] = useState('');
-  const [filterVendor, setFilterVendor] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
   const [sortKey, setSortKey] = useState<SortKey>('status');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
-  // Unique vendors derived from items
-  const uniqueVendors = useMemo(() => {
-    const vendors = items
-      .map((i) => i.vendor)
-      .filter((v): v is string => v !== null);
-    return Array.from(new Set(vendors)).sort();
-  }, [items]);
+  // Fetch procurement items and division list
+  useEffect(() => {
+    if (!projectId || !activeCompanyId) return;
 
-  // Unique locations derived from items
-  const uniqueLocations = useMemo(() => {
-    const locs = items.flatMap((i) => i.locations);
-    return Array.from(new Set(locs)).sort();
-  }, [items]);
+    async function load() {
+      setLoading(true);
+      setError(null);
+
+      // Fetch items
+      const { data: itemData, error: itemErr } = await supabase
+        .from('procurement_items')
+        .select(PROCUREMENT_ITEM_COLUMNS)
+        .eq('project_id', projectId!)
+        .order('sort_order');
+
+      if (itemErr) {
+        setError('Failed to load procurement items.');
+        setLoading(false);
+        return;
+      }
+
+      // Fetch level-1 cost codes (divisions) for the filter dropdown
+      const { data: divData, error: divErr } = await supabase
+        .from('cost_codes')
+        .select('code, title')
+        .eq('company_id', activeCompanyId!)
+        .eq('level', 1)
+        .order('sort_order');
+
+      if (divErr) {
+        setError('Failed to load divisions.');
+        setLoading(false);
+        return;
+      }
+
+      setItems(itemData ?? []);
+      setDivisions(divData ?? []);
+      setLoading(false);
+    }
+
+    load();
+  }, [projectId, activeCompanyId]);
 
   // Filtered + sorted items
   const displayItems = useMemo(() => {
     let filtered = items.filter((item) => {
-      if (filterDivision && item.csiDivision !== filterDivision) return false;
+      if (filterDivision && item.csi_division !== filterDivision) return false;
       if (filterStatus && item.status !== filterStatus) return false;
-      if (filterVendor) {
-        if (filterVendor === '__none__') {
-          if (item.vendor !== null) return false;
-        } else {
-          if (item.vendor !== filterVendor) return false;
-        }
-      }
-      if (filterLocation && !item.locations.includes(filterLocation)) return false;
       if (search) {
         const q = search.toLowerCase();
         const match =
           item.name.toLowerCase().includes(q) ||
-          item.description.toLowerCase().includes(q) ||
-          item.csiCode.toLowerCase().includes(q) ||
-          item.csiLabel.toLowerCase().includes(q);
+          (item.description ?? '').toLowerCase().includes(q) ||
+          (item.csi_code ?? '').toLowerCase().includes(q) ||
+          (item.csi_label ?? '').toLowerCase().includes(q);
         if (!match) return false;
       }
       return true;
@@ -76,13 +99,7 @@ export function SelectionRegister() {
           cmp = a.name.localeCompare(b.name);
           break;
         case 'csiCode':
-          cmp = a.csiCode.localeCompare(b.csiCode);
-          break;
-        case 'location':
-          cmp = (a.locations[0] ?? '').localeCompare(b.locations[0] ?? '');
-          break;
-        case 'vendor':
-          cmp = (a.vendor ?? '').localeCompare(b.vendor ?? '');
+          cmp = (a.csi_code ?? '').localeCompare(b.csi_code ?? '');
           break;
         case 'status':
           cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
@@ -92,7 +109,7 @@ export function SelectionRegister() {
     });
 
     return filtered;
-  }, [items, search, filterDivision, filterLocation, filterVendor, filterStatus, sortKey, sortDir]);
+  }, [items, search, filterDivision, filterStatus, sortKey, sortDir]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -112,6 +129,22 @@ export function SelectionRegister() {
       : <ChevronDown size={12} className="ml-0.5 text-slate-600" />;
   }
 
+  if (!projectId || !activeCompanyId) {
+    return (
+      <div className="flex h-full items-center justify-center text-slate-400">
+        No project or company selected.
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center text-slate-400">
+        Loading selection register...
+      </div>
+    );
+  }
+
   const selectClass =
     'rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500';
 
@@ -125,6 +158,12 @@ export function SelectionRegister() {
         title="Selection Register"
         stats={`${displayItems.length} of ${items.length} items`}
       />
+
+      {error && (
+        <div className="mx-5 mt-2 rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {/* Filter bar */}
       <div className="border-b border-slate-200 bg-slate-50 px-5 py-3 flex flex-wrap items-center gap-3">
@@ -147,38 +186,9 @@ export function SelectionRegister() {
           className={selectClass}
         >
           <option value="">All Divisions</option>
-          {sampleDivisions.map((div) => (
+          {divisions.map((div) => (
             <option key={div.code} value={div.code}>
-              {div.code} — {div.name}
-            </option>
-          ))}
-        </select>
-
-        {/* Location */}
-        <select
-          value={filterLocation}
-          onChange={(e) => setFilterLocation(e.target.value)}
-          className={selectClass}
-        >
-          <option value="">All Locations</option>
-          {uniqueLocations.map((loc) => (
-            <option key={loc} value={loc}>
-              {loc}
-            </option>
-          ))}
-        </select>
-
-        {/* Vendor */}
-        <select
-          value={filterVendor}
-          onChange={(e) => setFilterVendor(e.target.value)}
-          className={selectClass}
-        >
-          <option value="">All Vendors</option>
-          <option value="__none__">Not Assigned</option>
-          {uniqueVendors.map((v) => (
-            <option key={v} value={v}>
-              {v}
+              {div.code} — {div.title}
             </option>
           ))}
         </select>
@@ -201,57 +211,34 @@ export function SelectionRegister() {
         <table className="w-full border-collapse">
           <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200">
             <tr>
-              <th
-                className={thSortClass}
-                onClick={() => handleSort('name')}
-              >
+              <th className={thSortClass} onClick={() => handleSort('name')}>
                 <span className="flex items-center">
                   Item <SortIcon col="name" />
                 </span>
               </th>
-              <th
-                className={thSortClass}
-                onClick={() => handleSort('csiCode')}
-              >
+              <th className={thSortClass} onClick={() => handleSort('csiCode')}>
                 <span className="flex items-center">
                   CSI Code <SortIcon col="csiCode" />
                 </span>
               </th>
-              <th
-                className={thSortClass}
-                onClick={() => handleSort('location')}
-              >
-                <span className="flex items-center">
-                  Location <SortIcon col="location" />
-                </span>
-              </th>
-              <th
-                className={thSortClass}
-                onClick={() => handleSort('vendor')}
-              >
-                <span className="flex items-center">
-                  Vendor <SortIcon col="vendor" />
-                </span>
-              </th>
-              <th className={thClass}>Submittals</th>
-              <th
-                className={thSortClass}
-                onClick={() => handleSort('status')}
-              >
+              <th className={thSortClass} onClick={() => handleSort('status')}>
                 <span className="flex items-center">
                   Status <SortIcon col="status" />
                 </span>
               </th>
+              <th className={thClass}>Notes</th>
             </tr>
           </thead>
           <tbody>
             {displayItems.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={4}
                   className="px-4 py-12 text-center text-[13px] text-slate-400"
                 >
-                  No items match the current filters.
+                  {items.length === 0
+                    ? 'No procurement items yet. Add items in the Scope Builder.'
+                    : 'No items match the current filters.'}
                 </td>
               </tr>
             ) : (
@@ -263,7 +250,7 @@ export function SelectionRegister() {
                     className={`border-b border-slate-100 ${status.rowClass} hover:brightness-95 transition-[filter]`}
                   >
                     {/* Item name + description */}
-                    <td className="px-3 py-2.5 max-w-[220px]">
+                    <td className="px-3 py-2.5 max-w-[260px]">
                       <p className="text-[13px] font-semibold text-slate-900 leading-snug">
                         {item.name}
                       </p>
@@ -276,41 +263,15 @@ export function SelectionRegister() {
 
                     {/* CSI Code */}
                     <td className="px-3 py-2.5 whitespace-nowrap">
-                      <span className="font-mono text-[11px] text-slate-600">
-                        {item.csiCode}
-                      </span>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{item.csiLabel}</p>
-                    </td>
-
-                    {/* Location */}
-                    <td className="px-3 py-2.5 text-[12px] text-slate-600 max-w-[160px]">
-                      {item.locations.join(', ')}
-                    </td>
-
-                    {/* Vendor */}
-                    <td className="px-3 py-2.5 text-[12px]">
-                      {item.vendor ? (
-                        <span className="text-slate-700">{item.vendor}</span>
+                      {item.csi_code ? (
+                        <>
+                          <span className="font-mono text-[11px] text-slate-600">
+                            {item.csi_code}
+                          </span>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{item.csi_label}</p>
+                        </>
                       ) : (
-                        <span className="italic text-slate-400">Not assigned</span>
-                      )}
-                    </td>
-
-                    {/* Submittals */}
-                    <td className="px-3 py-2.5">
-                      {item.submittalTypes.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {item.submittalTypes.map((type) => (
-                            <span
-                              key={type}
-                              className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 whitespace-nowrap"
-                            >
-                              {submittalTypeLabels[type]}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-[11px] text-slate-400 italic">No submittal</span>
+                        <span className="text-[11px] text-slate-400 italic">—</span>
                       )}
                     </td>
 
@@ -321,6 +282,15 @@ export function SelectionRegister() {
                       >
                         {status.label}
                       </span>
+                    </td>
+
+                    {/* Notes */}
+                    <td className="px-3 py-2.5 max-w-[200px]">
+                      {item.notes ? (
+                        <p className="text-[11px] text-slate-500 line-clamp-2">{item.notes}</p>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 italic">—</span>
+                      )}
                     </td>
                   </tr>
                 );

@@ -33,6 +33,9 @@ create table public.companies (
   -- Subscription tier
   subscription_tier text check (subscription_tier in ('core', 'core_trial')) default 'core_trial',
 
+  -- Ownership
+  created_by uuid references auth.users(id),
+
   -- Timestamps
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -55,21 +58,18 @@ create trigger companies_updated_at
 alter table public.companies enable row level security;
 
 -- Company members can read their own company
+-- Uses security definer function to avoid circular RLS dependency
+-- (companies policy reading users table, which has its own RLS)
 create policy "Company members can read own company"
   on public.companies for select
-  using (
-    id in (
-      select company_id from public.users
-      where auth_id = auth.uid()
-    )
-  );
+  using (public.user_belongs_to_company(id));
 
 -- Company admins can update their own company
 create policy "Company admins can update own company"
   on public.companies for update
-  using (
-    id in (
-      select company_id from public.users
-      where auth_id = auth.uid() and role in ('admin', 'primary_admin')
-    )
-  );
+  using (public.user_belongs_to_company(id));
+
+-- Only the creator can delete a company
+create policy "Creator can delete own company"
+  on public.companies for delete
+  using (created_by = auth.uid());

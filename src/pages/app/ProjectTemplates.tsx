@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { PageHeader } from '../../components/PageHeader';
-import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import { supabase } from '../../../supabase/client';
 
 interface TemplateTask {
@@ -73,36 +73,21 @@ function TemplateCard({ template }: { template: Template }) {
 }
 
 export function ProjectTemplates() {
-  const { user } = useAuth();
+  const { activeCompanyId } = useCompany();
 
   const [loading, setLoading] = useState(true);
   const [templates, setTemplates] = useState<Template[]>([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!activeCompanyId) return;
 
     async function load() {
       setLoading(true);
       try {
-        // Get company_id for this user
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('company_id')
-          .eq('auth_id', user!.id)
-          .single();
-
-        if (userError || !userData?.company_id) {
-          setLoading(false);
-          return;
-        }
-
-        const companyId = userData.company_id;
-
-        // Fetch templates
         const { data: templateRows, error: templateError } = await supabase
           .from('pcl_templates')
           .select('id, name, description, examples, review_rounds')
-          .eq('company_id', companyId)
+          .eq('company_id', activeCompanyId!)
           .order('name', { ascending: true });
 
         if (templateError || !templateRows || templateRows.length === 0) {
@@ -139,7 +124,7 @@ export function ProjectTemplates() {
     }
 
     load();
-  }, [user]);
+  }, [activeCompanyId]);
 
   const statsText =
     !loading && templates.length > 0

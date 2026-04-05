@@ -38,6 +38,7 @@ interface ScopeBuilderSplitPanelProps {
   items: ProcurementItem[];
   onCreateItem: (item: Omit<ProcurementItem, 'id' | 'project_id' | 'sort_order'>) => Promise<void>;
   onUpdateItem: (itemId: string, updates: Partial<Pick<ProcurementItem, 'name' | 'description' | 'status' | 'notes'>>) => Promise<void>;
+  onDeleteItem: (itemId: string) => Promise<void>;
   initialDivisionId: string;
   onBackToCards: () => void;
 }
@@ -47,6 +48,7 @@ export function ScopeBuilderSplitPanel({
   items,
   onCreateItem,
   onUpdateItem,
+  onDeleteItem,
   initialDivisionId,
   onBackToCards,
 }: ScopeBuilderSplitPanelProps) {
@@ -107,6 +109,7 @@ export function ScopeBuilderSplitPanel({
               subdivisionName={selectedNode.title}
               onAddItem={() => setShowAddForm(true)}
               onUpdateItem={onUpdateItem}
+              onDeleteItem={onDeleteItem}
             />
             {showAddForm && (
               <AddItemForm

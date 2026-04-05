@@ -12,10 +12,16 @@ export interface ProcurementItem {
   csi_code: string | null;
   csi_division: string | null;
   csi_label: string | null;
+  vendor_id: string | null;
+  requires_submittal: boolean;
   status: ItemStatus;
   notes: string | null;
   sort_order: number;
 }
+
+/** Columns selected when querying procurement_items from Supabase. */
+export const PROCUREMENT_ITEM_COLUMNS =
+  'id, project_id, name, description, cost_code_id, csi_code, csi_division, csi_label, vendor_id, requires_submittal, status, notes, sort_order' as const;
 
 /** Raw cost_code row from Supabase. */
 export interface CostCode {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/PageHeader';
-import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import { supabase } from '../../../supabase/client';
 
 interface PersonRow {
@@ -18,7 +18,7 @@ type SortKey = keyof PersonRow;
 type SortDir = 'asc' | 'desc';
 
 export function People() {
-  const { user } = useAuth();
+  const { activeCompanyId } = useCompany();
 
   const [rows, setRows] = useState<PersonRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,38 +28,25 @@ export function People() {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   useEffect(() => {
-    if (!user) return;
+    if (!activeCompanyId) return;
 
     async function fetchPeople() {
       setLoading(true);
       setError(null);
 
-      // Step 1: resolve company_id
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('company_id')
-        .eq('auth_id', user!.id)
-        .single();
+      const [contactsRes, usersRes] = await Promise.all([
+        supabase
+          .from('company_contacts')
+          .select('id, first_name, last_name, title, company_organization, email, phone, role_category')
+          .eq('company_id', activeCompanyId!),
+        supabase
+          .from('users')
+          .select('id, first_name, last_name, title, email, phone, role_category')
+          .eq('company_id', activeCompanyId!),
+      ]);
 
-      if (userError || !userData) {
-        setError('Could not load your company information.');
-        setLoading(false);
-        return;
-      }
-
-      const companyId = userData.company_id;
-
-      // Step 2: fetch company_contacts
-      const { data: contacts, error: contactsError } = await supabase
-        .from('company_contacts')
-        .select('id, first_name, last_name, title, company_organization, email, phone, role_category')
-        .eq('company_id', companyId);
-
-      // Step 3: fetch users
-      const { data: users, error: usersError } = await supabase
-        .from('users')
-        .select('id, first_name, last_name, title, email, phone, role_category')
-        .eq('company_id', companyId);
+      const { data: contacts, error: contactsError } = contactsRes;
+      const { data: users, error: usersError } = usersRes;
 
       if (contactsError || usersError) {
         setError('Could not load people.');
@@ -94,7 +81,7 @@ export function People() {
     }
 
     fetchPeople();
-  }, [user]);
+  }, [activeCompanyId]);
 
   function handleSort(key: SortKey) {
     if (key === sortKey) {

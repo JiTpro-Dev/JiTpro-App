@@ -3,6 +3,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { LeftNav } from './LeftNav';
 import { TopBar } from './TopBar';
 import { useCompany } from '../../context/CompanyContext';
+import { ProjectProvider } from '../../context/ProjectContext';
 
 const COLLAPSE_KEY = 'jitpro_nav_collapsed';
 
@@ -38,14 +39,16 @@ export function AppShell() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <LeftNav isCollapsed={isCollapsed} onToggleCollapse={handleToggleCollapse} companyName={companyName} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <TopBar companyName={companyName} />
-        <main className="flex-1 overflow-y-auto bg-slate-50">
-          <Outlet />
-        </main>
+    <ProjectProvider>
+      <div className="flex h-screen overflow-hidden">
+        <LeftNav isCollapsed={isCollapsed} onToggleCollapse={handleToggleCollapse} companyName={companyName} />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <TopBar companyName={companyName} />
+          <main className="flex-1 overflow-y-auto bg-slate-50">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </ProjectProvider>
   );
 }

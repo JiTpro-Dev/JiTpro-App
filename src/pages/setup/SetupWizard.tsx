@@ -9,6 +9,7 @@ import { CompanyContacts } from './steps/CompanyContacts';
 import { CostCodes } from './steps/CostCodes';
 import { PclTemplates } from './steps/PclTemplates';
 import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import {
   saveCompanyProfile,
   saveCompanyAdmin,
@@ -35,6 +36,7 @@ export function SetupWizard() {
   const navigate = useNavigate();
   const { companyId: routeCompanyId } = useParams<{ companyId?: string }>();
   const { user } = useAuth();
+  const { setActiveCompany } = useCompany();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -109,6 +111,15 @@ export function SetupWizard() {
           // Step 6: PCL Templates + Complete Setup
           if (!companyId) throw new Error('Company not created yet');
           await savePclTemplatesAndComplete(companyId, defaultPclTemplates);
+
+          // Switch active company to the newly set up company
+          setActiveCompany({
+            id: companyId,
+            display_name: profileData.displayName || null,
+            legal_name: profileData.legalName,
+            setup_completed: true,
+          });
+
           navigate('/app/home');
           return;
         }

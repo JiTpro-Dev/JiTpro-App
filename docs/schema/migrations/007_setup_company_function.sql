@@ -7,9 +7,9 @@
 -- but user record doesn't exist yet.
 --
 -- Multi-company rules:
---   - Super admins (app_metadata.is_super_admin = true) can create unlimited companies.
---   - All other users can only create one company per account.
+--   - All authenticated users can create multiple companies.
 --   - Pass p_company_id to update an existing company (resume setup).
+--   - Subscription/plan limits should be enforced at the application layer, not here.
 
 create or replace function public.setup_company(
   p_legal_name text,
@@ -34,7 +34,6 @@ declare
   v_company_id uuid;
   v_auth_id uuid;
   v_email text;
-  v_is_super boolean;
 begin
   v_auth_id := auth.uid();
   if v_auth_id is null then
@@ -42,12 +41,6 @@ begin
   end if;
 
   select email into v_email from auth.users where id = v_auth_id;
-
-  -- Check super admin status from JWT app_metadata
-  v_is_super := coalesce(
-    (current_setting('request.jwt.claims', true)::json -> 'app_metadata' ->> 'is_super_admin')::boolean,
-    false
-  );
 
   -- If a company_id was provided, update that specific company (resume setup)
   if p_company_id is not null then
@@ -77,12 +70,7 @@ begin
     return p_company_id;
   end if;
 
-  -- Non-super users: block if they already have a company
-  if not v_is_super and exists (select 1 from public.users where auth_id = v_auth_id) then
-    raise exception 'You already have a company. Only one company per account is allowed.';
-  end if;
-
-  -- Create a new company
+  -- Create a new company (multi-company allowed for all users)
   insert into public.companies (
     legal_name, display_name, address, city, state, zip,
     license_number, states_licensed_in, company_phone,

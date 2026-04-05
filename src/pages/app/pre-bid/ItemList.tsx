@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Check, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import type { ProcurementItem, ItemStatus } from './scopeBuilderTypes';
 import { statusConfig } from './scopeBuilderTypes';
 
@@ -15,9 +15,10 @@ interface ItemListProps {
   subdivisionName: string;
   onAddItem: () => void;
   onUpdateItem: (itemId: string, updates: Partial<Pick<ProcurementItem, 'name' | 'description' | 'status' | 'notes'>>) => Promise<void>;
+  onDeleteItem: (itemId: string) => Promise<void>;
 }
 
-export function ItemList({ items, subdivisionCode, subdivisionName, onAddItem, onUpdateItem }: ItemListProps) {
+export function ItemList({ items, subdivisionCode, subdivisionName, onAddItem, onUpdateItem, onDeleteItem }: ItemListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
@@ -153,6 +154,13 @@ export function ItemList({ items, subdivisionCode, subdivisionName, onAddItem, o
                         title="Edit item"
                       >
                         <Pencil size={13} />
+                      </button>
+                      <button
+                        onClick={() => { if (confirm(`Delete "${item.name}"?`)) onDeleteItem(item.id); }}
+                        className="rounded p-1 text-slate-400 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                        title="Delete item"
+                      >
+                        <Trash2 size={13} />
                       </button>
                       <span
                         className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${status.badgeClass}`}

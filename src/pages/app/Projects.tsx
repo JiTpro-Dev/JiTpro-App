@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/PageHeader';
-import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import { supabase } from '../../../supabase/client';
 
 interface Project {
@@ -24,7 +24,7 @@ function statusStyle(status: string): string {
 }
 
 export function Projects() {
-  const { user } = useAuth();
+  const { activeCompanyId } = useCompany();
   const navigate = useNavigate();
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -32,30 +32,16 @@ export function Projects() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!activeCompanyId) return;
 
     async function fetchProjects() {
       setLoading(true);
       setError(null);
 
-      // Step 1: get company_id for the current user
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('company_id')
-        .eq('auth_id', user!.id)
-        .single();
-
-      if (userError || !userData) {
-        setError('Could not load your company information.');
-        setLoading(false);
-        return;
-      }
-
-      // Step 2: fetch projects for that company
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .select('id, name, status, address')
-        .eq('company_id', userData.company_id)
+        .eq('company_id', activeCompanyId!)
         .order('name');
 
       if (projectError) {
@@ -69,7 +55,7 @@ export function Projects() {
     }
 
     fetchProjects();
-  }, [user]);
+  }, [activeCompanyId]);
 
   const activeCount = projects.filter((p) => p.status === 'Active').length;
 
@@ -83,19 +69,12 @@ export function Projects() {
             : `${projects.length} project${projects.length !== 1 ? 's' : ''} · ${activeCount} active`
         }
         actions={
-          <div className="relative group">
-            <button
-              disabled
-              className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white opacity-50 cursor-not-allowed"
-            >
-              Create New Project
-            </button>
-            <div className="absolute right-0 top-full mt-1 hidden group-hover:block z-10">
-              <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-500 shadow-sm whitespace-nowrap">
-                Coming soon
-              </div>
-            </div>
-          </div>
+          <button
+            onClick={() => navigate('/app/projects/new')}
+            className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          >
+            Create New Project
+          </button>
         }
       />
 

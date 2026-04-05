@@ -27,6 +27,7 @@ import { Billing } from './pages/app/Billing';
 import { Settings } from './pages/app/Settings';
 import { ScopeBuilder } from './pages/app/pre-bid/ScopeBuilder';
 import { SelectionRegister } from './pages/app/pre-bid/SelectionRegister';
+import { CreateProject } from './pages/app/CreateProject';
 
 function App() {
   return (
@@ -120,6 +121,7 @@ function App() {
             {/* Company-level pages */}
             <Route path="home" element={<CompanyHome />} />
             <Route path="projects" element={<Projects />} />
+            <Route path="projects/new" element={<CreateProject />} />
             <Route path="people" element={<People />} />
             <Route path="organizations" element={<Organizations />} />
             <Route path="cost-codes" element={<CostCodes />} />

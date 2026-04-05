@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/PageHeader';
-import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import { supabase } from '../../../supabase/client';
 
 interface Contact {
@@ -18,7 +18,7 @@ interface OrgGroup {
 }
 
 export function Organizations() {
-  const { user } = useAuth();
+  const { activeCompanyId } = useCompany();
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,30 +26,16 @@ export function Organizations() {
   const [expandedOrgs, setExpandedOrgs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!user) return;
+    if (!activeCompanyId) return;
 
     async function fetchContacts() {
       setLoading(true);
       setError(null);
 
-      // Step 1: resolve company_id
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('company_id')
-        .eq('auth_id', user!.id)
-        .single();
-
-      if (userError || !userData) {
-        setError('Could not load your company information.');
-        setLoading(false);
-        return;
-      }
-
-      // Step 2: fetch company_contacts
       const { data, error: contactsError } = await supabase
         .from('company_contacts')
         .select('id, first_name, last_name, title, email, phone, company_organization')
-        .eq('company_id', userData.company_id)
+        .eq('company_id', activeCompanyId!)
         .order('last_name');
 
       if (contactsError) {
@@ -72,7 +58,7 @@ export function Organizations() {
     }
 
     fetchContacts();
-  }, [user]);
+  }, [activeCompanyId]);
 
   // Group contacts by organization; blanks go under "Unaffiliated"
   const orgGroups = useMemo<OrgGroup[]>(() => {

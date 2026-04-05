@@ -1,8 +1,9 @@
-import { useLocation } from 'react-router-dom';
 import { NavHeader } from './NavHeader';
 import { NavGroup } from './NavGroup';
 import { ProjectSwitcher } from './ProjectSwitcher';
+import { CompanySwitcher } from './CompanySwitcher';
 import { companyNavGroups, companyAdminItems, projectNavGroups } from './navConfig';
+import { useProject } from '../../context/ProjectContext';
 
 interface LeftNavProps {
   isCollapsed: boolean;
@@ -11,9 +12,7 @@ interface LeftNavProps {
 }
 
 export function LeftNav({ isCollapsed, onToggleCollapse, companyName }: LeftNavProps) {
-  const location = useLocation();
-  const projectMatch = location.pathname.match(/\/app\/project\/([^/]+)/);
-  const projectId = projectMatch?.[1] ?? null;
+  const { projectId, project } = useProject();
   const isProjectContext = Boolean(projectId);
 
   const projectBase = projectId ? `/app/project/${projectId}` : '';
@@ -39,7 +38,7 @@ export function LeftNav({ isCollapsed, onToggleCollapse, companyName }: LeftNavP
 
       {isProjectContext && (
         <ProjectSwitcher
-          projectName="Maple St Residence"
+          projectName={project?.name ?? 'Loading...'}
           isCollapsed={isCollapsed}
         />
       )}
@@ -59,6 +58,8 @@ export function LeftNav({ isCollapsed, onToggleCollapse, companyName }: LeftNavP
           ))}
         </div>
       )}
+
+      <CompanySwitcher isCollapsed={isCollapsed} />
     </nav>
   );
 }

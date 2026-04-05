@@ -1,7 +1,7 @@
 // src/pages/app/CostCodes.tsx
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../../components/PageHeader';
-import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import { supabase } from '../../../supabase/client';
 
 interface CostCodeRow {
@@ -27,7 +27,7 @@ const LEVEL_LABEL: Record<number, string> = {
 };
 
 export function CostCodes() {
-  const { user } = useAuth();
+  const { activeCompanyId } = useCompany();
 
   const [loading, setLoading] = useState(true);
   const [costCodes, setCostCodes] = useState<CostCodeRow[]>([]);
@@ -35,36 +35,21 @@ export function CostCodes() {
   const [stats, setStats] = useState('');
 
   useEffect(() => {
-    if (!user) return;
+    if (!activeCompanyId) return;
 
     async function load() {
       setLoading(true);
       try {
-        // Get company_id for this user
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('company_id')
-          .eq('auth_id', user!.id)
-          .single();
-
-        if (userError || !userData?.company_id) {
-          setLoading(false);
-          return;
-        }
-
-        const companyId = userData.company_id;
-
-        // Fetch company preference and cost codes in parallel
         const [companyRes, codesRes] = await Promise.all([
           supabase
             .from('companies')
             .select('show_cost_code_numbers')
-            .eq('id', companyId)
+            .eq('id', activeCompanyId!)
             .single(),
           supabase
             .from('cost_codes')
             .select('id, code, title, level, sort_order')
-            .eq('company_id', companyId)
+            .eq('company_id', activeCompanyId!)
             .order('sort_order', { ascending: true }),
         ]);
 
@@ -93,7 +78,7 @@ export function CostCodes() {
     }
 
     load();
-  }, [user]);
+  }, [activeCompanyId]);
 
   return (
     <>

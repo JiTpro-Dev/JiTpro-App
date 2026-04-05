@@ -1,7 +1,7 @@
 // src/pages/app/Calendars.tsx
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../../components/PageHeader';
-import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import { supabase } from '../../../supabase/client';
 
 interface WorkWeekRow {
@@ -33,43 +33,28 @@ const DAY_KEYS: { key: keyof WorkWeekRow; label: string }[] = [
 ];
 
 export function Calendars() {
-  const { user } = useAuth();
+  const { activeCompanyId } = useCompany();
 
   const [loading, setLoading] = useState(true);
   const [workWeek, setWorkWeek] = useState<WorkWeekRow | null>(null);
   const [holidays, setHolidays] = useState<HolidayRow[]>([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!activeCompanyId) return;
 
     async function load() {
       setLoading(true);
       try {
-        // Get company_id for this user
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('company_id')
-          .eq('auth_id', user!.id)
-          .single();
-
-        if (userError || !userData?.company_id) {
-          setLoading(false);
-          return;
-        }
-
-        const companyId = userData.company_id;
-
-        // Fetch work week and holidays in parallel
         const [workWeekRes, holidaysRes] = await Promise.all([
           supabase
             .from('company_work_weeks')
             .select('monday, tuesday, wednesday, thursday, friday, saturday, sunday')
-            .eq('company_id', companyId)
+            .eq('company_id', activeCompanyId!)
             .single(),
           supabase
             .from('company_holidays')
             .select('id, name, date_description, is_active, is_recurring')
-            .eq('company_id', companyId)
+            .eq('company_id', activeCompanyId!)
             .order('name', { ascending: true }),
         ]);
 
@@ -81,7 +66,7 @@ export function Calendars() {
     }
 
     load();
-  }, [user]);
+  }, [activeCompanyId]);
 
   const hasData = workWeek !== null || holidays.length > 0;
 
