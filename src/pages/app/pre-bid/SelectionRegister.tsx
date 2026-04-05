@@ -4,7 +4,7 @@ import { Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
 import { useCompany } from '../../../context/CompanyContext';
 import { supabase } from '../../../../supabase/client';
-import type { ProcurementItem, ItemStatus, CostCode } from './scopeBuilderTypes';
+import type { ProcurementItem, ItemStatus } from './scopeBuilderTypes';
 import { statusConfig, PROCUREMENT_ITEM_COLUMNS } from './scopeBuilderTypes';
 
 type SortKey = 'name' | 'csiCode' | 'status';

@@ -42,6 +42,8 @@ export function AddItemForm({ csiCode, csiDivision, csiLabel, costCodeId, onSave
       csi_label: csiLabel,
       status,
       notes: notes.trim() || null,
+      vendor_id: null,
+      requires_submittal: false,
     });
     setSaving(false);
   };
