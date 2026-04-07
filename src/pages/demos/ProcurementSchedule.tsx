@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '../../layouts/AppLayout';
-import { supabase } from '../../../supabase/client';
+import { sandboxSupabase } from '../../../supabase/sandboxClient';
 
 interface TimelineItem {
   name: string;
@@ -224,12 +224,11 @@ export function ProcurementSchedule() {
     startDate: string;
     endDate: string;
     days: number;
-    x: number;
-    y: number;
+    rect: DOMRect;
   } | null>(null);
 
   useEffect(() => {
-    supabase
+    sandboxSupabase
       .from('procurement_timelines')
       .select('id, name, delivery_date, status, timeline_data')
       .order('delivery_date', { ascending: true })
@@ -571,12 +570,8 @@ export function ProcurementSchedule() {
                                   startDate: formatDateFull(seg.startDate),
                                   endDate: formatDateFull(seg.endDate),
                                   days: seg.days,
-                                  x: e.clientX,
-                                  y: e.clientY,
+                                  rect: (e.currentTarget as HTMLElement).getBoundingClientRect(),
                                 });
-                              }}
-                              onMouseMove={(e) => {
-                                setTooltip((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
                               }}
                               onMouseLeave={() => setTooltip(null)}
                             />
@@ -604,18 +599,34 @@ export function ProcurementSchedule() {
         )}
       </div>
 
-      {/* Tooltip */}
-      {tooltip && (
-        <div
-          className="fixed z-50 pointer-events-none rounded-md border border-slate-200 bg-white px-3 py-2 shadow-lg text-sm"
-          style={{ left: tooltip.x + 12, top: tooltip.y - 10 }}
-        >
-          <p className="font-semibold text-slate-900">{tooltip.itemName}</p>
-          <p className="text-slate-700">{tooltip.phaseName}</p>
-          <p className="text-slate-600">{tooltip.startDate} — {tooltip.endDate}</p>
-          <p className="text-slate-600">{tooltip.days} working days</p>
-        </div>
-      )}
+      {/* Tooltip anchored to hovered segment */}
+      {tooltip && (() => {
+        const bubbleW = 220;
+        const bubbleH = 96;
+        const gap = 6;
+        const { rect } = tooltip;
+
+        // Horizontal: align to segment left, clamp to viewport
+        const rawLeft = rect.left;
+        const left = Math.min(Math.max(rawLeft, 8), window.innerWidth - bubbleW - 8);
+
+        // Vertical: prefer below segment, flip above if not enough room
+        const belowTop = rect.bottom + gap;
+        const aboveTop = rect.top - gap - bubbleH;
+        const top = belowTop + bubbleH > window.innerHeight ? Math.max(aboveTop, 8) : belowTop;
+
+        return (
+          <div
+            className="fixed z-50 pointer-events-none rounded-md border border-slate-200 bg-white px-3 py-2 shadow-lg text-sm"
+            style={{ left, top, width: bubbleW }}
+          >
+            <p className="font-semibold text-slate-900">{tooltip.itemName}</p>
+            <p className="text-slate-700">{tooltip.phaseName}</p>
+            <p className="text-slate-600">{tooltip.startDate} — {tooltip.endDate}</p>
+            <p className="text-slate-600">{tooltip.days} working days</p>
+          </div>
+        );
+      })()}
     </AppLayout>
   );
 }

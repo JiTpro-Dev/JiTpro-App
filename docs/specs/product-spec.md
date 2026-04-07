@@ -1,3 +1,14 @@
+# DESIGN / INTENT DOCUMENT
+
+This document describes the intended or future state of the system.
+
+It may not reflect the current implementation.
+
+Refer to:
+docs/CURRENT_STATE_UPDATED.md for actual system behavior.
+
+---
+
 # JiTpro Product, Business, and System Specification
 
 **Status:** Draft v0.2

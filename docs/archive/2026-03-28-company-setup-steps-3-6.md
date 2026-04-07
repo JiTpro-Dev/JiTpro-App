@@ -1,3 +1,12 @@
+# DEPRECATED DOCUMENT
+
+This document no longer reflects the current JiTpro system.
+
+Refer to:
+docs/CURRENT_STATE_UPDATED.md
+
+---
+
 # Company Setup Wizard Steps 3-6 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

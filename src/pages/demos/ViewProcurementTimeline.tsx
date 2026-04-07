@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppLayout } from '../../layouts/AppLayout';
-import { supabase } from '../../../supabase/client';
+import { sandboxSupabase } from '../../../supabase/sandboxClient';
 
 interface SavedTimeline {
   id: string;
@@ -22,7 +22,7 @@ export function ViewProcurementTimeline() {
 
   const fetchTimelines = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await sandboxSupabase
       .from('procurement_timelines')
       .select('id, name, description, delivery_date, status, baseline_count, created_at, updated_at')
       .order('created_at', { ascending: false });

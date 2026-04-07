@@ -424,77 +424,164 @@ create policy "Admins can insert users" on public.users
   for insert with check (company_id in (select company_id from public.users where auth_id = auth.uid() and role in ('admin', 'primary_admin')));
 
 -- Company Settings (work week, holidays, contacts, cost codes, templates)
+-- All use user_belongs_to_company() for multi-company support.
 create policy "Read own company work week" on public.company_work_weeks
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 create policy "Admins manage work week" on public.company_work_weeks
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Read own company holidays" on public.company_holidays
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 create policy "Admins manage holidays" on public.company_holidays
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Read own company contacts" on public.company_contacts
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 create policy "Admins manage contacts" on public.company_contacts
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Read own company cost codes" on public.cost_codes
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 create policy "Admins manage cost codes" on public.cost_codes
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Read own company PCL templates" on public.pcl_templates
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 create policy "Admins manage PCL templates" on public.pcl_templates
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 create policy "Read own company PCL tasks" on public.pcl_template_tasks
-  for select using (template_id in (select id from public.pcl_templates where company_id = public.current_company_id()));
+  for select using (
+    template_id in (select id from public.pcl_templates where public.user_belongs_to_company(company_id))
+  );
 create policy "Admins manage PCL tasks" on public.pcl_template_tasks
-  for all using (template_id in (select id from public.pcl_templates where company_id = public.current_company_id()));
+  for all
+  using (
+    template_id in (select id from public.pcl_templates where public.user_belongs_to_company(company_id))
+  )
+  with check (
+    template_id in (select id from public.pcl_templates where public.user_belongs_to_company(company_id))
+  );
 
 -- Projects
 create policy "Read own company projects" on public.projects
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 create policy "Admins manage projects" on public.projects
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 -- Project Locations
 create policy "Read own project locations" on public.project_locations
-  for select using (project_id in (select id from public.projects where company_id = public.current_company_id()));
+  for select using (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  );
 create policy "Manage own project locations" on public.project_locations
-  for all using (project_id in (select id from public.projects where company_id = public.current_company_id()));
+  for all
+  using (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  )
+  with check (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  );
 
 -- Project Members
 create policy "Read own project members" on public.project_members
-  for select using (project_id in (select id from public.projects where company_id = public.current_company_id()));
+  for select using (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  );
 create policy "Manage own project members" on public.project_members
-  for all using (project_id in (select id from public.projects where company_id = public.current_company_id()));
+  for all
+  using (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  )
+  with check (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  );
 
 -- Vendors
 create policy "Read own company vendors" on public.vendors
-  for select using (company_id = public.current_company_id());
+  for select using (public.user_belongs_to_company(company_id));
 create policy "Manage own company vendors" on public.vendors
-  for all using (company_id = public.current_company_id());
+  for all
+  using (public.user_belongs_to_company(company_id))
+  with check (public.user_belongs_to_company(company_id));
 
 -- Procurement Items
 create policy "Read own procurement items" on public.procurement_items
-  for select using (project_id in (select id from public.projects where company_id = public.current_company_id()));
+  for select using (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  );
 create policy "Manage own procurement items" on public.procurement_items
-  for all using (project_id in (select id from public.projects where company_id = public.current_company_id()));
+  for all
+  using (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  )
+  with check (
+    project_id in (select id from public.projects where public.user_belongs_to_company(company_id))
+  );
 
 -- Procurement Item Locations
 create policy "Read own item locations" on public.procurement_item_locations
-  for select using (item_id in (select pi.id from public.procurement_items pi join public.projects p on pi.project_id = p.id where p.company_id = public.current_company_id()));
+  for select using (
+    item_id in (
+      select pi.id from public.procurement_items pi
+      join public.projects p on pi.project_id = p.id
+      where public.user_belongs_to_company(p.company_id)
+    )
+  );
 create policy "Manage own item locations" on public.procurement_item_locations
-  for all using (item_id in (select pi.id from public.procurement_items pi join public.projects p on pi.project_id = p.id where p.company_id = public.current_company_id()));
+  for all
+  using (
+    item_id in (
+      select pi.id from public.procurement_items pi
+      join public.projects p on pi.project_id = p.id
+      where public.user_belongs_to_company(p.company_id)
+    )
+  )
+  with check (
+    item_id in (
+      select pi.id from public.procurement_items pi
+      join public.projects p on pi.project_id = p.id
+      where public.user_belongs_to_company(p.company_id)
+    )
+  );
 
 -- Procurement Item Submittals
 create policy "Read own item submittals" on public.procurement_item_submittals
-  for select using (item_id in (select pi.id from public.procurement_items pi join public.projects p on pi.project_id = p.id where p.company_id = public.current_company_id()));
+  for select using (
+    item_id in (
+      select pi.id from public.procurement_items pi
+      join public.projects p on pi.project_id = p.id
+      where public.user_belongs_to_company(p.company_id)
+    )
+  );
 create policy "Manage own item submittals" on public.procurement_item_submittals
-  for all using (item_id in (select pi.id from public.procurement_items pi join public.projects p on pi.project_id = p.id where p.company_id = public.current_company_id()));
+  for all
+  using (
+    item_id in (
+      select pi.id from public.procurement_items pi
+      join public.projects p on pi.project_id = p.id
+      where public.user_belongs_to_company(p.company_id)
+    )
+  )
+  with check (
+    item_id in (
+      select pi.id from public.procurement_items pi
+      join public.projects p on pi.project_id = p.id
+      where public.user_belongs_to_company(p.company_id)
+    )
+  );
 
 
 -- ============================================

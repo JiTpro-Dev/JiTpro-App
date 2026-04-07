@@ -12,6 +12,13 @@ interface CostCodesProps {
   onShowNumbersChange: (show: boolean) => void;
 }
 
+/**
+ * Parse a hierarchical CSV/TSV with up to 4 code-title pair columns per row.
+ * Expected columns: division_code, division_title, section_code, section_title,
+ *   subsection_code, subsection_title, paragraph_code, paragraph_title
+ * Each row must repeat its parent chain in earlier columns.
+ * Codes may contain decimals (e.g., "02 41 16.13") — stored as-is.
+ */
 function parseCostCodeCSV(text: string): CostCodeNode[] {
   const lines = text.split(/\r?\n/).filter((line) => line.trim());
   if (lines.length < 2) return [];

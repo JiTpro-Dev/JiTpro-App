@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '../../layouts/AppLayout';
-import { supabase } from '../../../supabase/client';
-import { useAuth } from '../../context/AuthContext';
+import { sandboxSupabase } from '../../../supabase/sandboxClient';
 
 interface TimelineItem {
   name: string;
@@ -122,7 +121,13 @@ export function ProcurementTimeline() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('id');
-  const { session } = useAuth();
+  const [sandboxUserId, setSandboxUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    sandboxSupabase.auth.getUser().then(({ data }) => {
+      setSandboxUserId(data.user?.id ?? null);
+    });
+  }, []);
 
   // Procurement item info
   const [itemName, setItemName] = useState('');
@@ -161,7 +166,7 @@ export function ProcurementTimeline() {
   useEffect(() => {
     if (!editId) return;
     setLoading(true);
-    supabase
+    sandboxSupabase
       .from('procurement_timelines')
       .select('*')
       .eq('id', editId)
@@ -347,20 +352,20 @@ export function ProcurementTimeline() {
     if (!editReasonModal || !editReason.trim() || !editId) return;
 
     // Log the edit
-    await supabase.from('timeline_edit_log').insert({
+    await sandboxSupabase.from('timeline_edit_log').insert({
       timeline_id: editId,
       task_name: editReasonModal.taskName,
       field_changed: editReasonModal.field,
       old_value: editReasonModal.oldValue,
       new_value: editReasonModal.newValue,
       reason: editReason.trim(),
-      changed_by: session?.user?.id,
+      changed_by: sandboxUserId,
     });
 
     editReasonModal.applyChange();
     setEditReasonModal(null);
     setEditReason('');
-  }, [editReasonModal, editReason, editId, session]);
+  }, [editReasonModal, editReason, editId, sandboxUserId]);
 
   const handleDeliveryDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (isStartInPast) return; // delivery is calculated when start is in the past
@@ -451,8 +456,8 @@ export function ProcurementTimeline() {
       setSaveError('Please enter a procurement item name.');
       return;
     }
-    if (!session?.user?.id) {
-      setSaveError('You must be logged in to save.');
+    if (!sandboxUserId) {
+      setSaveError('Sandbox session not available. Please log out and log back in.');
       return;
     }
 
@@ -461,7 +466,7 @@ export function ProcurementTimeline() {
     setSaveSuccess(false);
 
     const payload = {
-      user_id: session.user.id,
+      user_id: sandboxUserId,
       name: itemName.trim(),
       description: itemDescription.trim() || null,
       delivery_date: toInputDate(activeDeliveryDate),
@@ -476,9 +481,9 @@ export function ProcurementTimeline() {
 
     let error;
     if (editId) {
-      ({ error } = await supabase.from('procurement_timelines').update(payload).eq('id', editId));
+      ({ error } = await sandboxSupabase.from('procurement_timelines').update(payload).eq('id', editId));
     } else {
-      ({ error } = await supabase.from('procurement_timelines').insert(payload));
+      ({ error } = await sandboxSupabase.from('procurement_timelines').insert(payload));
     }
 
     setSaving(false);
@@ -507,13 +512,13 @@ export function ProcurementTimeline() {
       setTimeout(() => setSaveSuccess(false), 3000);
     }
   }, [
-    itemName, itemDescription, activeDeliveryDate, data, session, status, baselineCount,
+    itemName, itemDescription, activeDeliveryDate, data, sandboxUserId, status, baselineCount,
     finalDesignEnabled, finalDesignDate, finalSelectionEnabled, finalSelectionDate, editId,
   ]);
 
   // Set baseline
   const handleSetBaseline = useCallback(async () => {
-    if (!editId || !session?.user?.id) {
+    if (!editId || !sandboxUserId) {
       setSaveError('Save the item first before setting a baseline.');
       return;
     }
@@ -532,11 +537,11 @@ export function ProcurementTimeline() {
       review_rounds: reviewRounds,
     };
 
-    const { error: baselineError } = await supabase.from('timeline_baselines').insert({
+    const { error: baselineError } = await sandboxSupabase.from('timeline_baselines').insert({
       timeline_id: editId,
       baseline_number: newBaselineNumber,
       snapshot,
-      created_by: session.user.id,
+      created_by: sandboxUserId,
     });
 
     if (baselineError) {
@@ -546,7 +551,7 @@ export function ProcurementTimeline() {
 
     // Update the timeline status to active and increment baseline count
     const newStatus = 'active' as const;
-    const { error: updateError } = await supabase
+    const { error: updateError } = await sandboxSupabase
       .from('procurement_timelines')
       .update({ status: newStatus, baseline_count: newBaselineNumber })
       .eq('id', editId);
@@ -561,7 +566,7 @@ export function ProcurementTimeline() {
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
   }, [
-    editId, session, baselineCount, itemName, itemDescription, activeDeliveryDate,
+    editId, sandboxUserId, baselineCount, itemName, itemDescription, activeDeliveryDate,
     startDate, data, finalDesignEnabled, finalDesignDate, finalSelectionEnabled,
     finalSelectionDate, reviewRounds,
   ]);

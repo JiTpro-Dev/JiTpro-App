@@ -1,3 +1,12 @@
+# DEPRECATED DOCUMENT
+
+This document no longer reflects the current JiTpro system.
+
+Refer to:
+docs/CURRENT_STATE_UPDATED.md
+
+---
+
 # Implementation Architecture
 
 This document describes the concrete implementation details of the JiTpro system.

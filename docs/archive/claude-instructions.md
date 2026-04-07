@@ -1,3 +1,12 @@
+# DEPRECATED DOCUMENT
+
+This document no longer reflects the current JiTpro system.
+
+Refer to:
+docs/CURRENT_STATE_UPDATED.md
+
+---
+
 # JiTpro Application - Development Instructions
 
 ## Overview

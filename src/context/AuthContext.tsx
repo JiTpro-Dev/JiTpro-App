@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../../supabase/client';
+import { sandboxSupabase } from '../../supabase/sandboxClient';
 
 interface AuthContextType {
   session: Session | null;
@@ -35,9 +36,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
+
+    // Also sign into sandbox Supabase so /demo/* routes work without a second login
+    sandboxSupabase.auth.signInWithPassword({ email, password }).catch((err) => {
+      console.error('Sandbox login failed (non-blocking):', err);
+    });
   };
 
   const logout = async () => {
+    // Sign out of both production and sandbox
+    sandboxSupabase.auth.signOut().catch((err) => {
+      console.error('Sandbox logout failed (non-blocking):', err);
+    });
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   };
