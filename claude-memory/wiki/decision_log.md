@@ -4,6 +4,21 @@ Resolved decisions with rationale. Most recent first.
 
 ---
 
+### 2026-04-07 — Company directory records: deactivate, never delete
+
+**Decision:** Vendors, contacts, and users are company-level master records. They must be deactivated (`is_active = false`), not hard-deleted. Projects reference directory records but cannot create, edit, or deactivate them. Only Company Admin role should have directory mutation permissions (role enforcement deferred to Project 01).
+
+**Rationale:** Discovered during Vendor CRUD testing. The initial implementation allowed any user to hard-delete vendors from the company directory. This violates the intended model where the directory is persistent across all projects. A PM deleting a vendor from the directory would affect every project in the company. Deactivation preserves referential integrity and historical context while hiding inactive records from selection UIs.
+
+**Impact:**
+- `vendors` table needs `is_active boolean default true` column (schema change)
+- `company_contacts` table needs same column (schema change, for consistency)
+- Vendors.tsx must replace DELETE with UPDATE `is_active = false`
+- Future vendor selectors must filter by `is_active = true`
+- Sets the pattern for all company directory entities going forward
+
+---
+
 ### 2026-04-06 — Sandbox isolation via separate Supabase project
 
 **Decision:** Demo/sandbox features use a completely separate Supabase project (`jitpro-sandbox`), not just separate tables in the same database.

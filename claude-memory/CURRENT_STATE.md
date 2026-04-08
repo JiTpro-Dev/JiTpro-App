@@ -61,9 +61,10 @@
 
 ### Vendor System
 - `vendors` table exists in schema with RLS policies
-- No CRUD UI exists
-- `vendor_id` on procurement_items is always null
-- AddItemForm explicitly sets vendor_id to null
+- Company-level Vendors page built (`/app/vendors`) with list, search, sort, create/edit modal
+- **Correction needed**: Page currently hard-deletes — must switch to deactivation (`is_active` column needed)
+- `vendor_id` on procurement_items is always null (vendor selector not yet added to AddItemForm)
+- No `is_active` column on vendors table yet (schema migration pending)
 
 ### Location System
 - `project_locations` table exists (3-level: Building > Floor > Room)

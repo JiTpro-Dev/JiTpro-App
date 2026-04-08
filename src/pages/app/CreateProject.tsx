@@ -68,10 +68,11 @@ export function CreateProject() {
     // Add current user as project manager
     // Look up the app-level user record scoped to this company
     const { data: appUser } = await supabase
-      .from('users')
+      .from('people')
       .select('id')
       .eq('auth_id', user.id)
       .eq('company_id', activeCompanyId)
+      .eq('person_type', 'user')
       .maybeSingle();
 
     if (appUser) {
@@ -79,7 +80,7 @@ export function CreateProject() {
         .from('project_members')
         .insert({
           project_id: project.id,
-          user_id: appUser.id,
+          person_id: appUser.id,
           project_role: 'project_manager',
         });
 

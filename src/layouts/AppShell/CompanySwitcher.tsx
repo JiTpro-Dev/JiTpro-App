@@ -22,9 +22,10 @@ export function CompanySwitcher({ isCollapsed }: CompanySwitcherProps) {
 
     async function loadCompanies() {
       const { data: userRows } = await supabase
-        .from('users')
+        .from('people')
         .select('company_id')
-        .eq('auth_id', user!.id);
+        .eq('auth_id', user!.id)
+        .eq('person_type', 'user');
 
       if (!userRows || userRows.length <= 1) {
         setCompanies([]);

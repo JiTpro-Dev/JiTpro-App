@@ -28,6 +28,7 @@ import { Settings } from './pages/app/Settings';
 import { ScopeBuilder } from './pages/app/pre-bid/ScopeBuilder';
 import { SelectionRegister } from './pages/app/pre-bid/SelectionRegister';
 import { CreateProject } from './pages/app/CreateProject';
+import { Team } from './pages/app/Team';
 
 function App() {
   return (
@@ -133,6 +134,7 @@ function App() {
             <Route path="project/:projectId/home" element={<ProjectHome />} />
             <Route path="project/:projectId/scope-builder" element={<ScopeBuilder />} />
             <Route path="project/:projectId/selection-register" element={<SelectionRegister />} />
+            <Route path="project/:projectId/team" element={<Team />} />
             <Route index element={<Navigate to="home" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />

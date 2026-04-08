@@ -14,13 +14,17 @@ Unresolved technical and product questions. Add date when raised, add resolution
 - **Affects:** Project 01 (Auth & Environment)
 - **Decision needed before:** Building invitation UI
 
-**Q2: What role enforcement should exist in the UI?** (Raised: 2026-04-07)
+**Q2: What role enforcement should exist in the UI?** (Raised: 2026-04-07, updated 2026-04-07)
 - RLS handles data-level access control
-- No UI-level restrictions exist (all authenticated users see all nav items)
-- Should certain nav items/actions be hidden or disabled based on role?
-- What roles beyond "admin" and "member" are needed?
-- **Affects:** Project 01 (Auth & Environment)
-- **Decision needed before:** Building role-based nav visibility
+- No UI-level restrictions exist (all authenticated users see all nav items and actions)
+- Company directory model (decided 2026-04-07) establishes permission intent:
+  - Company Admin: create/edit/deactivate directory records
+  - PM: view directory, select/assign to project items
+  - Superintendent: view-only everywhere
+- Should directory CRUD buttons (Add/Edit/Deactivate) be hidden for non-admin roles?
+- Should this be implemented now (simple flag check) or deferred to full role system?
+- **Affects:** Project 01 (Auth & Environment), Project 02 (immediate — Vendors page shows edit/deactivate to everyone)
+- **Decision needed before:** Shipping Vendors page to real users
 
 **Q3: Should company settings be editable after setup?** (Raised: 2026-04-07)
 - Setup wizard creates company with all settings

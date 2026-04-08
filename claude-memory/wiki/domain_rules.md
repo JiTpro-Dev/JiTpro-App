@@ -154,10 +154,43 @@ Separating them forces accountability: if coordination runs long, baselines show
 
 ---
 
+## Company Directory Model
+
+> Established: 2026-04-07. This is a non-negotiable architectural rule.
+
+**Vendors, contacts, and users are company-level directory records.** They are persistent, shared across all projects, and owned by the company — not by any individual project.
+
+### Ownership Rules
+- Vendors belong to a company (`vendors.company_id`)
+- Contacts belong to a company (`company_contacts.company_id`)
+- Users belong to a company (`users.company_id`)
+- Projects **reference** directory records but do not **own** them
+
+### Project Interaction Rules
+- Projects **select** vendors from the company directory (via `procurement_items.vendor_id`)
+- Projects can **assign** or **unassign** a vendor to/from a procurement item
+- Projects **cannot** create, edit, or deactivate company-level directory records
+- Setting `vendor_id = null` on a procurement item removes the assignment — it does not affect the vendor record
+
+### Deactivation, Not Deletion
+- Company directory records should be **deactivated** (`is_active = false`), not hard-deleted
+- Deactivated records are hidden from selection dropdowns but remain visible in the directory with an "Inactive" badge
+- Deactivation preserves referential integrity and historical context
+- Only Company Admin role should be able to deactivate master records (role enforcement not yet built)
+
+### Permission Intent (Future — Not Enforced Yet)
+| Role | Company Directory | Project Assignment |
+|------|------------------|-------------------|
+| Company Admin | Create, edit, deactivate | Full access |
+| PM | View-only | Select/assign vendor to items |
+| Superintendent | View-only | View-only |
+
+---
+
 ## Copy-on-Create / No-Cascade Rules
 
 - PCL templates are copied into project context, not referenced — editing a template does not affect existing projects
-- Deleting a company contact does not cascade to procurement items
+- Deactivating a vendor does not remove it from procurement items — the reference persists for historical context
 - Cost code deletion and re-import replaces the full tree (DELETE + INSERT pattern in setup)
 
 ---

@@ -28,10 +28,11 @@ async function fetchAndValidateCompany(
 ): Promise<CompanyInfo | null> {
   // Verify the user belongs to this company
   const { data: membership } = await supabase
-    .from('users')
+    .from('people')
     .select('company_id')
     .eq('auth_id', authId)
     .eq('company_id', companyId)
+    .eq('person_type', 'user')
     .maybeSingle();
 
   if (!membership) return null;

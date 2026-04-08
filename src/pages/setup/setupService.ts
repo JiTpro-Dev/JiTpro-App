@@ -47,7 +47,7 @@ export async function saveCompanyAdmin(
 ): Promise<void> {
   // Update the primary admin record created in step 1 (scoped to this company)
   const { error: adminError } = await supabase
-    .from('users')
+    .from('people')
     .update({
       first_name: data.adminFirstName,
       last_name: data.adminLastName,
@@ -56,7 +56,8 @@ export async function saveCompanyAdmin(
       phone: data.adminPhone || null,
     })
     .eq('auth_id', authUserId)
-    .eq('company_id', companyId);
+    .eq('company_id', companyId)
+    .eq('person_type', 'user');
 
   if (adminError) throw new Error(`Failed to save admin: ${adminError.message}`);
 
@@ -64,9 +65,10 @@ export async function saveCompanyAdmin(
   if (data.addSecondaryAdmin && data.secondaryEmail) {
     // Check if secondary already exists
     const { data: existing } = await supabase
-      .from('users')
+      .from('people')
       .select('id')
       .eq('company_id', companyId)
+      .eq('person_type', 'user')
       .eq('role', 'admin')
       .eq('email', data.secondaryEmail)
       .maybeSingle();
@@ -74,7 +76,7 @@ export async function saveCompanyAdmin(
     if (existing) {
       // Update existing secondary admin
       await supabase
-        .from('users')
+        .from('people')
         .update({
           first_name: data.secondaryFirstName,
           last_name: data.secondaryLastName,
@@ -85,7 +87,7 @@ export async function saveCompanyAdmin(
     } else {
       // Insert new secondary admin (no auth_id yet — they'll get an invite)
       await supabase
-        .from('users')
+        .from('people')
         .insert({
           company_id: companyId,
           first_name: data.secondaryFirstName,
@@ -93,7 +95,10 @@ export async function saveCompanyAdmin(
           title: data.secondaryTitle || null,
           email: data.secondaryEmail,
           phone: data.secondaryPhone || null,
+          person_type: 'user',
+          contact_type: 'internal',
           role: 'admin',
+          is_active: true,
         });
     }
   }
@@ -146,16 +151,17 @@ export async function saveCompanyCalendar(
   }
 }
 
-// Step 4: Save company contacts
+// Step 4: Save company contacts (writes to people table)
 export async function saveCompanyContacts(
   companyId: string,
   contacts: ContactRow[]
 ): Promise<void> {
-  // Delete existing and re-insert
+  // Delete existing contact-type people and re-insert
   await supabase
-    .from('company_contacts')
+    .from('people')
     .delete()
-    .eq('company_id', companyId);
+    .eq('company_id', companyId)
+    .eq('person_type', 'contact');
 
   if (contacts.length > 0) {
     const contactRows = contacts
@@ -169,13 +175,15 @@ export async function saveCompanyContacts(
         email: c.email || null,
         phone: c.phone || null,
         address: c.address || null,
+        person_type: 'contact',
         contact_type: c.contact_type || null,
         role_category: c.role_category || null,
         notes: c.notes || null,
+        is_active: true,
       }));
 
     const { error } = await supabase
-      .from('company_contacts')
+      .from('people')
       .insert(contactRows);
 
     if (error) throw new Error(`Failed to save contacts: ${error.message}`);
