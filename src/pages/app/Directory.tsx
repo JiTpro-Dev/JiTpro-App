@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageHeader } from '../../components/PageHeader';
 import { ChevronRight, Pencil, EyeOff, Plus, UserPlus, X } from 'lucide-react';
-import { ContactDetailModal, type ContactDetailData } from '../../components/ContactDetailModal';
+import { ContactDetailModal } from '../../components/ContactDetailModal';
 import { useCompany } from '../../context/CompanyContext';
 import { supabase } from '../../../supabase/client';
 import {
