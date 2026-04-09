@@ -40,6 +40,7 @@ export interface ContactRow {
   contact_type: string;
   role_category: string;
   notes: string;
+  org_type: string;
   errors: string[];
 }
 
@@ -62,6 +63,11 @@ export interface PclTemplate {
 
 export const validContactTypes = ['internal', 'external'];
 
+export const validOrgTypes = [
+  'owner', 'architect', 'engineer', 'designer',
+  'consultant', 'subcontractor', 'supplier', 'other',
+];
+
 export const validRoleCategories = [
   'principal', 'senior_project_manager', 'project_manager', 'project_engineer',
   'project_administrator', 'superintendent', 'foreman',
@@ -71,7 +77,7 @@ export const validRoleCategories = [
 
 export const csvTemplateColumns = [
   'First Name', 'Last Name', 'Title', 'Company/Organization',
-  'Email', 'Phone', 'Address', 'Contact Type', 'Role Category', 'Notes',
+  'Email', 'Phone', 'Address', 'Contact Type', 'Role Category', 'Notes', 'Org Type',
 ];
 
 export const defaultHolidays: Holiday[] = [

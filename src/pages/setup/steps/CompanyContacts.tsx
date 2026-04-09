@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import type { ContactRow } from '../setupTypes';
-import { csvTemplateColumns, validContactTypes, validRoleCategories } from '../setupTypes';
+import { csvTemplateColumns, validContactTypes, validRoleCategories, validOrgTypes } from '../setupTypes';
 
 interface CompanyContactsProps {
   contacts: ContactRow[];
@@ -39,6 +39,7 @@ function parseCSV(text: string): ContactRow[] {
       contact_type: (fields[7] || '').toLowerCase(),
       role_category: (fields[8] || '').toLowerCase(),
       notes: fields[9] || '',
+      org_type: (fields[10] || '').toLowerCase(),
       errors: [],
     };
 
@@ -50,6 +51,13 @@ function parseCSV(text: string): ContactRow[] {
     }
     if (row.role_category && !validRoleCategories.includes(row.role_category)) {
       row.errors.push(`Invalid Role Category: "${row.role_category}"`);
+    }
+    if (row.org_type && !validOrgTypes.includes(row.org_type)) {
+      row.errors.push(`Invalid Org Type: "${row.org_type}". Must be: ${validOrgTypes.join(', ')}`);
+    }
+    if (!row.org_type && row.company_organization && row.contact_type !== 'internal') {
+      row.org_type = 'subcontractor';
+      row.errors.push('No Org Type provided — defaulted to "subcontractor"');
     }
 
     return row;
@@ -75,7 +83,7 @@ export function CompanyContacts({ contacts, onContactsChange }: CompanyContactsP
     const header = csvTemplateColumns.join(',');
     const exampleRow = [
       'John', 'Smith', 'Project Manager', 'Smith Construction', 'john@example.com',
-      '555-555-5555', '123 Main St', 'Internal', 'project_manager', '',
+      '555-555-5555', '123 Main St', 'External', 'project_manager', '', 'subcontractor',
     ].join(',');
     const csv = header + '\n' + exampleRow + '\n';
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -139,6 +147,7 @@ export function CompanyContacts({ contacts, onContactsChange }: CompanyContactsP
       contact_type: manualType,
       role_category: manualRole,
       notes: '',
+      org_type: '',
       errors,
     };
 

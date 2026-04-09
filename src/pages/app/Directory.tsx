@@ -58,10 +58,18 @@ function GroupSection({
         {group.group}
       </h2>
       <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-        <table className="w-full text-left">
+        <table className="w-full text-left" style={{ tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '32px' }} />
+            <col style={{ width: '35%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '25%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '15%' }} />
+          </colgroup>
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50">
-              <th className="w-8 px-2 py-2.5" />
+              <th className="px-2 py-2.5" />
               <th className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-slate-500">
                 Company Name
               </th>
@@ -137,13 +145,13 @@ function CompanyRow({
         }`}
         onClick={onToggle}
       >
-        <td className="w-8 px-2 py-3 text-center">
+        <td className="px-2 py-3 text-center">
           <ChevronRight
             size={14}
             className={`inline-block text-slate-400 transition-transform ${isOpen ? 'rotate-90' : ''}`}
           />
         </td>
-        <td className="px-4 py-3 text-[12px] font-medium text-slate-900">
+        <td className="px-4 py-3 text-[12px] font-medium text-slate-900 truncate">
           {company.name}
         </td>
         <td className="px-4 py-3">
@@ -231,10 +239,19 @@ function ContactsSubtable({
 
   return (
     <div className="border-t border-slate-200">
-      <table className="w-full text-left">
+      <table className="w-full text-left" style={{ tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: '32px' }} />
+          <col style={{ width: '20%' }} />
+          <col style={{ width: '18%' }} />
+          <col style={{ width: '22%' }} />
+          <col style={{ width: '15%' }} />
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '13%' }} />
+        </colgroup>
         <thead>
           <tr className="bg-slate-100/60">
-            <th className="w-8" />
+            <th />
             <th className="px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.05em] text-slate-400">
               Name
             </th>
@@ -261,25 +278,25 @@ function ContactsSubtable({
               key={contact.personId}
               className={`border-t border-slate-100 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
             >
-              <td className="w-8" />
-              <td className="px-4 py-2.5 text-[12px] font-medium text-slate-900">
+              <td />
+              <td className="px-4 py-2.5 text-[12px] font-medium text-slate-900 truncate">
                 <button
                   onClick={() => onViewContact(contact)}
-                  className="text-left hover:text-amber-600 hover:underline"
+                  className="text-left hover:text-amber-600 hover:underline truncate block w-full"
                 >
                   {contact.name}
                 </button>
               </td>
-              <td className="px-4 py-2.5 text-[12px] text-slate-600">
+              <td className="px-4 py-2.5 text-[12px] text-slate-600 truncate">
                 {contact.title || '\u2014'}
               </td>
-              <td className="px-4 py-2.5 text-[12px] text-slate-600">
+              <td className="px-4 py-2.5 text-[12px] text-slate-600 truncate">
                 {contact.email || '\u2014'}
               </td>
-              <td className="px-4 py-2.5 text-[12px] text-slate-600">
+              <td className="px-4 py-2.5 text-[12px] text-slate-600 truncate">
                 {contact.phone || '\u2014'}
               </td>
-              <td className="px-4 py-2.5 text-[12px] text-slate-600">
+              <td className="px-4 py-2.5 text-[12px] text-slate-600 truncate">
                 {contact.roleLabel || '\u2014'}
               </td>
               <td className="px-4 py-2.5 text-right">
@@ -1177,10 +1194,18 @@ export function Directory() {
                   Company (Internal)
                 </h2>
                 <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-                  <table className="w-full text-left">
+                  <table className="w-full text-left" style={{ tableLayout: 'fixed' }}>
+                    <colgroup>
+                      <col style={{ width: '32px' }} />
+                      <col style={{ width: '35%' }} />
+                      <col style={{ width: '15%' }} />
+                      <col style={{ width: '25%' }} />
+                      <col style={{ width: '10%' }} />
+                      <col style={{ width: '15%' }} />
+                    </colgroup>
                     <thead>
                       <tr className="border-b border-slate-100 bg-slate-50">
-                        <th className="w-8 px-2 py-2.5" />
+                        <th className="px-2 py-2.5" />
                         <th className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-slate-500">
                           Company Name
                         </th>
@@ -1203,13 +1228,13 @@ export function Directory() {
                         className="border-b border-slate-100 last:border-0 cursor-pointer bg-white"
                         onClick={() => toggleCompany(internalCompany.id)}
                       >
-                        <td className="w-8 px-2 py-3 text-center">
+                        <td className="px-2 py-3 text-center">
                           <ChevronRight
                             size={14}
                             className={`inline-block text-slate-400 transition-transform ${expandedIds.has(internalCompany.id) ? 'rotate-90' : ''}`}
                           />
                         </td>
-                        <td className="px-4 py-3 text-[12px] font-medium text-slate-900">
+                        <td className="px-4 py-3 text-[12px] font-medium text-slate-900 truncate">
                           {internalCompany.name}
                         </td>
                         <td className="px-4 py-3">

@@ -98,7 +98,10 @@ export function SetupWizard() {
         case 3: {
           // Step 4: Company Contacts
           if (!companyId) throw new Error('Company not created yet');
-          await saveCompanyContacts(companyId, contacts);
+          const { warnings } = await saveCompanyContacts(companyId, contacts);
+          if (warnings.length > 0) {
+            console.warn('Contact import warnings:', warnings);
+          }
           break;
         }
         case 4: {

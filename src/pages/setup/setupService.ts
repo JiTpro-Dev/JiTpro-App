@@ -151,22 +151,102 @@ export async function saveCompanyCalendar(
   }
 }
 
-// Step 4: Save company contacts (writes to people table)
+// Step 4: Save company contacts (writes to people + organizations tables)
 export async function saveCompanyContacts(
   companyId: string,
   contacts: ContactRow[]
-): Promise<void> {
-  // Delete existing contact-type people and re-insert
+): Promise<{ warnings: string[] }> {
+  const warnings: string[] = [];
+  const validContacts = contacts.filter((c) => c.first_name && c.last_name);
+
+  // --- 1. Build organization map from contacts ---
+  // Collect unique org names from external contacts
+  const orgNames = new Map<string, string>(); // normalized name → org_type
+  for (const c of validContacts) {
+    if (!c.company_organization || c.contact_type === 'internal') continue;
+    const name = c.company_organization.trim();
+    if (!name) continue;
+    const normalizedName = name.toLowerCase();
+    if (!orgNames.has(normalizedName)) {
+      orgNames.set(normalizedName, c.org_type || 'subcontractor');
+    }
+  }
+
+  // --- 2. Fetch existing organizations for this company ---
+  const { data: existingOrgs } = await supabase
+    .from('organizations')
+    .select('id, name, org_type')
+    .eq('company_id', companyId);
+
+  const existingOrgMap = new Map<string, { id: string; name: string; org_type: string | null }>();
+  for (const org of existingOrgs ?? []) {
+    existingOrgMap.set(org.name.toLowerCase(), org);
+  }
+
+  // --- 3. Create or match organizations ---
+  // Maps normalized org name → organization id
+  const orgIdMap = new Map<string, string>();
+
+  for (const [normalizedName, importedOrgType] of orgNames) {
+    const existing = existingOrgMap.get(normalizedName);
+
+    if (existing) {
+      orgIdMap.set(normalizedName, existing.id);
+
+      // Update org_type if currently NULL
+      if (!existing.org_type && importedOrgType) {
+        await supabase
+          .from('organizations')
+          .update({ org_type: importedOrgType })
+          .eq('id', existing.id);
+      } else if (existing.org_type && importedOrgType && existing.org_type !== importedOrgType) {
+        // Conflict: existing org_type differs from imported — surface warning
+        warnings.push(
+          `"${existing.name}" already has type "${existing.org_type}" — imported type "${importedOrgType}" was ignored.`
+        );
+      }
+    } else {
+      // Find the original-case name from contacts
+      const originalName = validContacts.find(
+        (c) => c.company_organization.trim().toLowerCase() === normalizedName
+      )?.company_organization.trim() || normalizedName;
+
+      const { data: inserted, error: insertError } = await supabase
+        .from('organizations')
+        .insert({
+          company_id: companyId,
+          name: originalName,
+          org_type: importedOrgType || null,
+          is_active: true,
+        })
+        .select('id')
+        .single();
+
+      if (insertError) {
+        warnings.push(`Could not create organization "${originalName}": ${insertError.message}`);
+      } else {
+        orgIdMap.set(normalizedName, inserted.id);
+      }
+    }
+  }
+
+  // --- 4. Delete existing contact-type people and re-insert ---
   await supabase
     .from('people')
     .delete()
     .eq('company_id', companyId)
     .eq('person_type', 'contact');
 
-  if (contacts.length > 0) {
-    const contactRows = contacts
-      .filter((c) => c.first_name && c.last_name)
-      .map((c) => ({
+  if (validContacts.length > 0) {
+    const contactRows = validContacts.map((c) => {
+      // Resolve organization_id by matching org name
+      let organizationId: string | null = null;
+      if (c.company_organization && c.contact_type !== 'internal') {
+        const normalizedName = c.company_organization.trim().toLowerCase();
+        organizationId = orgIdMap.get(normalizedName) ?? null;
+      }
+
+      return {
         company_id: companyId,
         first_name: c.first_name,
         last_name: c.last_name,
@@ -175,12 +255,14 @@ export async function saveCompanyContacts(
         email: c.email || null,
         phone: c.phone || null,
         address: c.address || null,
-        person_type: 'contact',
+        person_type: 'contact' as const,
         contact_type: c.contact_type || null,
         role_category: c.role_category || null,
         notes: c.notes || null,
+        organization_id: organizationId,
         is_active: true,
-      }));
+      };
+    });
 
     const { error } = await supabase
       .from('people')
@@ -188,6 +270,8 @@ export async function saveCompanyContacts(
 
     if (error) throw new Error(`Failed to save contacts: ${error.message}`);
   }
+
+  return { warnings };
 }
 
 // Step 5: Save cost codes and preferences

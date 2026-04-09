@@ -1,22 +1,29 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, X } from 'lucide-react';
+import { Archive, Trash2, X } from 'lucide-react';
 import { AppLayout } from '../layouts/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { useCompany, type CompanyInfo } from '../context/CompanyContext';
 import { supabase } from '../../supabase/client';
 
+interface DashboardCompany extends CompanyInfo {
+  archived_at: string | null;
+}
+
 export function Dashboard() {
   const { user } = useAuth();
   const { activeCompanyId, setActiveCompany, clearActiveCompany } = useCompany();
   const navigate = useNavigate();
-  const [companies, setCompanies] = useState<CompanyInfo[]>([]);
+  const [companies, setCompanies] = useState<DashboardCompany[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Delete confirmation state
-  const [deleteTarget, setDeleteTarget] = useState<CompanyInfo | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DashboardCompany | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Archive state
+  const [archivingId, setArchivingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -24,11 +31,12 @@ export function Dashboard() {
     async function loadCompanies() {
       const { data: companyRows, error: companyError } = await supabase
         .from('companies')
-        .select('id, display_name, legal_name, setup_completed')
+        .select('id, display_name, legal_name, setup_completed, archived_at')
+        .is('archived_at', null)
         .order('created_at');
 
       if (!companyError && companyRows) {
-        setCompanies(companyRows);
+        setCompanies(companyRows as DashboardCompany[]);
       }
       setLoading(false);
     }
@@ -36,19 +44,48 @@ export function Dashboard() {
     loadCompanies();
   }, [user]);
 
+  async function handleArchive(company: DashboardCompany) {
+    setArchivingId(company.id);
+    const { error } = await supabase
+      .from('companies')
+      .update({ archived_at: new Date().toISOString() })
+      .eq('id', company.id);
+
+    if (error) {
+      console.error('Archive failed:', error);
+      alert('Failed to archive company. Please try again.');
+      setArchivingId(null);
+      return;
+    }
+
+    setCompanies((prev) => prev.filter((c) => c.id !== company.id));
+
+    if (activeCompanyId === company.id) {
+      clearActiveCompany();
+    }
+
+    setArchivingId(null);
+  }
+
   async function handleDelete() {
     if (!deleteTarget) return;
 
     setDeleting(true);
     setDeleteError(null);
 
-    const { error } = await supabase
+    const { error, count } = await supabase
       .from('companies')
-      .delete()
+      .delete({ count: 'exact' })
       .eq('id', deleteTarget.id);
 
     if (error) {
       setDeleteError(error.message);
+      setDeleting(false);
+      return;
+    }
+
+    if (count === 0) {
+      setDeleteError('Delete was blocked. You may not have permission to delete this company.');
       setDeleting(false);
       return;
     }
@@ -68,6 +105,19 @@ export function Dashboard() {
   const completedCompanies = companies.filter((c) => c.setup_completed);
   const pendingCompanies = companies.filter((c) => !c.setup_completed);
 
+  // Check if there are any archived companies (for showing the link)
+  const [hasArchived, setHasArchived] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('companies')
+      .select('id', { count: 'exact', head: true })
+      .not('archived_at', 'is', null)
+      .then(({ count }) => {
+        setHasArchived((count ?? 0) > 0);
+      });
+  }, [user, companies]);
+
   return (
     <AppLayout pageTitle="Dashboard">
       <div className="mb-6 flex items-center justify-between">
@@ -79,12 +129,22 @@ export function Dashboard() {
               : `${companies.length} company${companies.length !== 1 ? 'ies' : ''} · ${completedCompanies.length} active · ${pendingCompanies.length} pending setup`}
           </p>
         </div>
-        <Link
-          to="/setup"
-          className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
-        >
-          + Setup New Company
-        </Link>
+        <div className="flex items-center gap-3">
+          {hasArchived && (
+            <Link
+              to="/archived"
+              className="rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              Archived Companies
+            </Link>
+          )}
+          <Link
+            to="/setup"
+            className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
+          >
+            + Setup New Company
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -122,6 +182,14 @@ export function Dashboard() {
                   Active
                 </span>
                 <button
+                  onClick={(e) => { e.stopPropagation(); handleArchive(c); }}
+                  disabled={archivingId === c.id}
+                  className="rounded p-1 text-slate-300 opacity-0 transition hover:bg-amber-50 hover:text-amber-600 group-hover:opacity-100"
+                  title="Archive company"
+                >
+                  <Archive size={13} />
+                </button>
+                <button
                   onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}
                   className="rounded p-1 text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
                   title="Delete company"
@@ -152,6 +220,14 @@ export function Dashboard() {
                   Resume Setup
                 </span>
                 <button
+                  onClick={(e) => { e.stopPropagation(); handleArchive(c); }}
+                  disabled={archivingId === c.id}
+                  className="rounded p-1 text-slate-300 opacity-0 transition hover:bg-amber-50 hover:text-amber-600 group-hover:opacity-100"
+                  title="Archive company"
+                >
+                  <Archive size={13} />
+                </button>
+                <button
                   onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}
                   className="rounded p-1 text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
                   title="Delete company"
@@ -169,7 +245,7 @@ export function Dashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between mb-4">
-              <h3 className="text-sm font-semibold text-slate-900">Delete Company</h3>
+              <h3 className="text-sm font-semibold text-red-700">Permanently Delete Company</h3>
               <button
                 onClick={() => { setDeleteTarget(null); setDeleteError(null); }}
                 className="text-slate-400 hover:text-slate-600"
@@ -178,11 +254,19 @@ export function Dashboard() {
               </button>
             </div>
 
-            <p className="text-[13px] text-slate-600 mb-1">
-              Are you sure you want to delete <strong>{deleteTarget.display_name || deleteTarget.legal_name}</strong>?
+            <p className="text-[13px] text-slate-600 mb-2">
+              You are about to permanently delete <strong>{deleteTarget.display_name || deleteTarget.legal_name}</strong>.
             </p>
-            <p className="text-[12px] text-red-600 mb-4">
-              This is irreversible. All projects, procurement items, contacts, cost codes, and other data associated with this company will be permanently deleted.
+            <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 mb-4">
+              <p className="text-[12px] text-red-700 font-medium mb-1">
+                This action cannot be undone.
+              </p>
+              <p className="text-[11px] text-red-600">
+                All projects, contacts, organizations, cost codes, calendars, templates, and every other record associated with this company will be permanently removed from the database.
+              </p>
+            </div>
+            <p className="text-[12px] text-slate-500 mb-4">
+              If you just want to hide this company from your dashboard, use <strong>Archive</strong> instead.
             </p>
 
             {deleteError && (
@@ -203,7 +287,7 @@ export function Dashboard() {
                 disabled={deleting}
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
-                {deleting ? 'Deleting...' : 'Delete Company'}
+                {deleting ? 'Deleting...' : 'Delete Permanently'}
               </button>
             </div>
           </div>

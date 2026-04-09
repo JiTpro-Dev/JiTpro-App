@@ -5,6 +5,7 @@ import { RequireAuth } from './auth/requireAuth';
 import { Login } from './pages/Login';
 import { ResetPassword } from './pages/ResetPassword';
 import { Dashboard } from './pages/Dashboard';
+import { ArchivedCompanies } from './pages/ArchivedCompanies';
 import { Demo } from './pages/Demo';
 import { ProjectDashboard } from './pages/ProjectDashboard';
 import { ProjectInformation } from './pages/ProjectInformation';
@@ -44,6 +45,14 @@ function App() {
             element={
               <RequireAuth>
                 <Dashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/archived"
+            element={
+              <RequireAuth>
+                <ArchivedCompanies />
               </RequireAuth>
             }
           />
