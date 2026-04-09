@@ -3,7 +3,8 @@ import { PageHeader } from '../../components/PageHeader';
 import { useCompany } from '../../context/CompanyContext';
 import { useProject } from '../../context/ProjectContext';
 import { supabase } from '../../../supabase/client';
-import { Plus, X, EyeOff, Eye, UserCog } from 'lucide-react';
+import { Plus, X, EyeOff, Eye, UserCog, ChevronRight, Building2, Users } from 'lucide-react';
+import { ContactDetailModal } from '../../components/ContactDetailModal';
 
 // A project team member — references a person in the unified people table
 interface TeamMember {
@@ -12,6 +13,7 @@ interface TeamMember {
   person_name: string;
   email: string;
   phone: string;
+  title: string;
   organization: string;
   person_type: 'Internal' | 'External';
   role_label: string;
@@ -32,6 +34,7 @@ interface DirectoryPerson {
 
 type SortKey = 'person_name' | 'organization' | 'person_type' | 'role_label' | 'project_role';
 type SortDir = 'asc' | 'desc';
+type ViewMode = 'contact' | 'company';
 
 const PROJECT_ROLES = [
   { value: 'project_manager', label: 'Project Manager' },
@@ -42,7 +45,7 @@ const PROJECT_ROLES = [
 ];
 
 export function Team() {
-  const { activeCompanyId } = useCompany();
+  const { activeCompanyId, activeCompany } = useCompany();
   const { projectId } = useProject();
 
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -54,6 +57,8 @@ export function Team() {
   const [showInactive, setShowInactive] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'Internal' | 'External'>('all');
   const [filterOrg, setFilterOrg] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('contact');
+  const [expandedCompanies, setExpandedCompanies] = useState<Set<string>>(new Set());
 
   // Add member modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -63,6 +68,9 @@ export function Team() {
   const [selectedRole, setSelectedRole] = useState('project_engineer');
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+
+  // View contact detail
+  const [viewingMember, setViewingMember] = useState<TeamMember | null>(null);
 
   // Deactivate confirmation
   const [deactivatingMember, setDeactivatingMember] = useState<TeamMember | null>(null);
@@ -88,18 +96,20 @@ export function Team() {
     const rows = memberRows ?? [];
     const personIds = rows.filter((r) => r.person_id).map((r) => r.person_id!);
 
-    // Fetch person details from unified directory view (includes organization_name)
+    // Fetch person details from unified directory view (includes company name)
     const { data: peopleData } = personIds.length > 0
       ? await supabase
           .from('directory_people')
-          .select('person_id, first_name, last_name, email, phone, person_type, contact_type, role_label, organization_name')
+          .select('person_id, first_name, last_name, email, phone, title, person_type, contact_type, role_label, organization_name')
           .in('person_id', personIds)
       : { data: [] as any[] };
 
     const peopleMap = new Map((peopleData ?? []).map((p: any) => [p.person_id, p]));
 
+    const gcName = activeCompany?.display_name || activeCompany?.legal_name || '';
     const mapped: TeamMember[] = rows.map((row) => {
       const person = row.person_id ? peopleMap.get(row.person_id) : null;
+      const isInternal = !person?.organization_name;
 
       return {
         id: row.id,
@@ -109,8 +119,9 @@ export function Team() {
           : '(Unknown)',
         email: person?.email ?? '',
         phone: person?.phone ?? '',
-        organization: person?.organization_name ?? '',
-        person_type: person?.contact_type === 'external' ? 'External' : 'Internal',
+        title: person?.title ?? '',
+        organization: person?.organization_name ?? gcName,
+        person_type: isInternal ? 'Internal' : 'External',
         role_label: person?.role_label ?? '',
         project_role: row.project_role,
         is_active: row.is_active,
@@ -125,7 +136,7 @@ export function Team() {
     fetchMembers();
   }, [projectId]);
 
-  // Unique organizations for filter dropdown
+  // Unique companies for filter dropdown
   const organizations = useMemo(() => {
     const orgs = new Set(members.map((m) => m.organization).filter(Boolean));
     return Array.from(orgs).sort();
@@ -155,6 +166,22 @@ export function Team() {
     });
   }, [filtered, sortKey, sortDir]);
 
+  // Grouped by company (for company view)
+  const groupedByCompany = useMemo(() => {
+    const map = new Map<string, TeamMember[]>();
+    for (const m of filtered) {
+      const key = m.organization || '(Unknown)';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(m);
+    }
+    // Sort members within each group by name
+    const entries = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+    for (const [, members] of entries) {
+      members.sort((a, b) => a.person_name.localeCompare(b.person_name));
+    }
+    return entries;
+  }, [filtered]);
+
   function handleSort(key: SortKey) {
     if (key === sortKey) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -167,6 +194,15 @@ export function Team() {
   function SortIndicator({ col }: { col: SortKey }) {
     if (col !== sortKey) return <span className="ml-1 text-slate-300">{'\u2195'}</span>;
     return <span className="ml-1 text-slate-600">{sortDir === 'asc' ? '\u2191' : '\u2193'}</span>;
+  }
+
+  function toggleCompanyGroup(companyName: string) {
+    setExpandedCompanies((prev) => {
+      const next = new Set(prev);
+      if (next.has(companyName)) next.delete(companyName);
+      else next.add(companyName);
+      return next;
+    });
   }
 
   // --- Add member ---
@@ -193,13 +229,14 @@ export function Team() {
       return;
     }
 
+    const companyName = activeCompany?.display_name || activeCompany?.legal_name || '';
     const allPeople: DirectoryPerson[] = (data ?? []).map((p) => ({
       id: p.person_id,
       source: p.person_type as 'user' | 'contact',
       name: [p.first_name, p.last_name].filter(Boolean).join(' '),
       email: p.email ?? '',
-      organization: p.organization_name ?? '',
-      person_type: p.contact_type === 'external' ? 'External' : 'Internal',
+      organization: p.organization_name ?? companyName,
+      person_type: !p.organization_name ? 'Internal' : 'External',
       role_label: p.role_label ?? '',
     }));
 
@@ -301,7 +338,7 @@ export function Team() {
 
   const columns: { key: SortKey; label: string }[] = [
     { key: 'person_name', label: 'Name' },
-    { key: 'organization', label: 'Organization' },
+    { key: 'organization', label: 'Company' },
     { key: 'person_type', label: 'Type' },
     { key: 'role_label', label: 'Directory Role' },
     { key: 'project_role', label: 'Project Role' },
@@ -309,6 +346,43 @@ export function Team() {
 
   const activeCount = members.filter((m) => m.is_active).length;
   const inactiveCount = members.filter((m) => !m.is_active).length;
+
+  // --- Render helpers ---
+
+  function MemberActions({ member }: { member: TeamMember }) {
+    return member.is_active ? (
+      <button
+        onClick={() => setDeactivatingMember(member)}
+        className="rounded p-1 text-slate-400 transition hover:bg-amber-50 hover:text-amber-600"
+        title="Deactivate"
+      >
+        <EyeOff size={14} />
+      </button>
+    ) : (
+      <button
+        onClick={() => handleReactivate(member)}
+        className="rounded p-1 text-slate-400 transition hover:bg-green-50 hover:text-green-600"
+        title="Reactivate"
+      >
+        <Eye size={14} />
+      </button>
+    );
+  }
+
+  function ProjectRoleSelect({ member }: { member: TeamMember }) {
+    return (
+      <select
+        value={member.project_role ?? ''}
+        onChange={(e) => handleRoleChange(member.id, e.target.value)}
+        className="rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-700 focus:border-slate-400 focus:outline-none"
+      >
+        <option value="">— None —</option>
+        {PROJECT_ROLES.map((r) => (
+          <option key={r.value} value={r.value}>{r.label}</option>
+        ))}
+      </select>
+    );
+  }
 
   return (
     <>
@@ -321,9 +395,36 @@ export function Team() {
         }
         filters={
           <div className="flex items-center gap-2">
+            {/* View mode toggle */}
+            <div className="flex rounded-md border border-slate-200">
+              <button
+                onClick={() => setViewMode('contact')}
+                className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition ${
+                  viewMode === 'contact'
+                    ? 'bg-slate-800 text-white'
+                    : 'text-slate-500 hover:text-slate-700'
+                } rounded-l-md`}
+                title="View by contact"
+              >
+                <Users size={12} />
+                Contact
+              </button>
+              <button
+                onClick={() => setViewMode('company')}
+                className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition ${
+                  viewMode === 'company'
+                    ? 'bg-slate-800 text-white'
+                    : 'text-slate-500 hover:text-slate-700'
+                } rounded-r-md`}
+                title="View by company"
+              >
+                <Building2 size={12} />
+                Company
+              </button>
+            </div>
             <input
               type="text"
-              placeholder="Search name, email, org..."
+              placeholder="Search name, email, company..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="rounded-md border border-slate-200 px-3 py-1.5 text-[12px] text-slate-700 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
@@ -343,7 +444,7 @@ export function Team() {
                 onChange={(e) => setFilterOrg(e.target.value)}
                 className="rounded-md border border-slate-200 px-2 py-1.5 text-[12px] text-slate-700 focus:border-slate-400 focus:outline-none"
               >
-                <option value="all">All Organizations</option>
+                <option value="all">All Companies</option>
                 {organizations.map((org) => (
                   <option key={org} value={org}>{org}</option>
                 ))}
@@ -403,7 +504,8 @@ export function Team() {
           </div>
         )}
 
-        {!loading && !error && members.length > 0 && (
+        {/* Contact view — flat table */}
+        {!loading && !error && members.length > 0 && viewMode === 'contact' && (
           <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
             <table className="w-full text-left">
               <thead>
@@ -437,14 +539,19 @@ export function Team() {
                       className={`border-b border-slate-100 last:border-0 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
                     >
                       <td className="px-4 py-3 text-[12px] font-medium text-slate-900">
-                        {member.person_name}
+                        <button
+                          onClick={() => setViewingMember(member)}
+                          className="text-left hover:text-amber-600 hover:underline"
+                        >
+                          {member.person_name}
+                        </button>
                         {!member.is_active && (
                           <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-400">
                             Inactive
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-[12px] text-slate-600">{member.organization || '\u2014'}</td>
+                      <td className="px-4 py-3 text-[12px] text-slate-600">{member.organization}</td>
                       <td className="px-4 py-3">
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
@@ -458,41 +565,108 @@ export function Team() {
                       </td>
                       <td className="px-4 py-3 text-[12px] text-slate-600">{member.role_label || '\u2014'}</td>
                       <td className="px-4 py-3">
-                        <select
-                          value={member.project_role ?? ''}
-                          onChange={(e) => handleRoleChange(member.id, e.target.value)}
-                          className="rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-700 focus:border-slate-400 focus:outline-none"
-                        >
-                          <option value="">— None —</option>
-                          {PROJECT_ROLES.map((r) => (
-                            <option key={r.value} value={r.value}>{r.label}</option>
-                          ))}
-                        </select>
+                        <ProjectRoleSelect member={member} />
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {member.is_active ? (
-                          <button
-                            onClick={() => setDeactivatingMember(member)}
-                            className="rounded p-1 text-slate-400 transition hover:bg-amber-50 hover:text-amber-600"
-                            title="Deactivate"
-                          >
-                            <EyeOff size={14} />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleReactivate(member)}
-                            className="rounded p-1 text-slate-400 transition hover:bg-green-50 hover:text-green-600"
-                            title="Reactivate"
-                          >
-                            <Eye size={14} />
-                          </button>
-                        )}
+                        <MemberActions member={member} />
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Company view — grouped by company */}
+        {!loading && !error && members.length > 0 && viewMode === 'company' && (
+          <div className="space-y-3">
+            {groupedByCompany.length === 0 ? (
+              <div className="rounded-lg border border-slate-200 bg-white px-4 py-8 text-center text-[12px] text-slate-400">
+                No results match your filters.
+              </div>
+            ) : (
+              groupedByCompany.map(([companyName, companyMembers]) => {
+                const isOpen = expandedCompanies.has(companyName);
+                return (
+                  <div key={companyName} className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+                    {/* Company header row */}
+                    <button
+                      onClick={() => toggleCompanyGroup(companyName)}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <ChevronRight
+                          size={14}
+                          className={`text-slate-400 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+                        />
+                        <span className="text-[13px] font-semibold text-slate-900">{companyName}</span>
+                      </div>
+                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                        {companyMembers.length} {companyMembers.length === 1 ? 'member' : 'members'}
+                      </span>
+                    </button>
+
+                    {/* Expanded member list */}
+                    {isOpen && (
+                      <div className="border-t border-slate-100">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="bg-slate-50">
+                              <th className="px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.05em] text-slate-400">Name</th>
+                              <th className="px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.05em] text-slate-400">Type</th>
+                              <th className="px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.05em] text-slate-400">Directory Role</th>
+                              <th className="px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.05em] text-slate-400">Project Role</th>
+                              <th className="px-4 py-2 text-right text-[10px] font-semibold uppercase tracking-[0.05em] text-slate-400">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {companyMembers.map((member, i) => (
+                              <tr
+                                key={member.id}
+                                className={`border-t border-slate-50 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                              >
+                                <td className="px-4 py-2.5 text-[12px] font-medium text-slate-900">
+                                  <button
+                                    onClick={() => setViewingMember(member)}
+                                    className="text-left hover:text-amber-600 hover:underline"
+                                  >
+                                    {member.person_name}
+                                  </button>
+                                  {!member.is_active && (
+                                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-400">
+                                      Inactive
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2.5">
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                      member.person_type === 'Internal'
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : 'bg-amber-100 text-amber-700'
+                                    }`}
+                                  >
+                                    {member.person_type}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2.5 text-[12px] text-slate-600">{member.role_label || '\u2014'}</td>
+                                <td className="px-4 py-2.5">
+                                  <ProjectRoleSelect member={member} />
+                                </td>
+                                <td className="px-4 py-2.5 text-right">
+                                  <MemberActions member={member} />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         )}
       </div>
@@ -511,7 +685,7 @@ export function Team() {
             {/* Search directory */}
             <input
               type="text"
-              placeholder="Search by name, email, or organization..."
+              placeholder="Search by name, email, or company..."
               value={dirSearch}
               onChange={(e) => setDirSearch(e.target.value)}
               className="mb-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] text-slate-800 placeholder-slate-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
@@ -627,6 +801,21 @@ export function Team() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Contact Detail Modal (read-only at project level) */}
+      {viewingMember && (
+        <ContactDetailModal
+          contact={{
+            name: viewingMember.person_name,
+            title: viewingMember.title,
+            email: viewingMember.email,
+            phone: viewingMember.phone,
+            role: viewingMember.role_label,
+            company: viewingMember.organization,
+          }}
+          onClose={() => setViewingMember(null)}
+        />
       )}
     </>
   );

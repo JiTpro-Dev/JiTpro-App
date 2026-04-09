@@ -53,7 +53,6 @@ const EMPTY_PERSON_FORM = {
   email: '',
   phone: '',
   title: '',
-  contact_type: 'external' as string,
   role_category: '',
 };
 
@@ -308,7 +307,7 @@ export function Organizations() {
         phone: personForm.phone.trim() || null,
         title: personForm.title.trim() || null,
         person_type: 'contact',
-        contact_type: personForm.contact_type || 'external',
+        contact_type: 'external',
         role_category: personForm.role_category || null,
         is_active: true,
       });
@@ -705,31 +704,18 @@ export function Organizations() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-[12px] font-medium text-slate-600">Contact Type</label>
-                  <select
-                    value={personForm.contact_type}
-                    onChange={(e) => setPersonForm({ ...personForm, contact_type: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                  >
-                    <option value="internal">Internal</option>
-                    <option value="external">External</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-[12px] font-medium text-slate-600">Role</label>
-                  <select
-                    value={personForm.role_category}
-                    onChange={(e) => setPersonForm({ ...personForm, role_category: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                  >
-                    <option value="">Select role...</option>
-                    {ROLE_CATEGORIES.map((r) => (
-                      <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className="mb-1 block text-[12px] font-medium text-slate-600">Role</label>
+                <select
+                  value={personForm.role_category}
+                  onChange={(e) => setPersonForm({ ...personForm, role_category: e.target.value })}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                >
+                  <option value="">Select role...</option>
+                  {ROLE_CATEGORIES.map((r) => (
+                    <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>
+                  ))}
+                </select>
               </div>
 
               {personFormError && (

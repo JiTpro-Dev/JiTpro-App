@@ -40,14 +40,13 @@ const EMPTY_FORM = {
   email: '',
   phone: '',
   title: '',
-  contact_type: 'external',
   role_category: '',
   organization_id: '' as string,
   notes: '',
 };
 
 export function People() {
-  const { activeCompanyId } = useCompany();
+  const { activeCompanyId, activeCompany } = useCompany();
 
   const [rows, setRows] = useState<PersonRow[]>([]);
   const [allRows, setAllRows] = useState<PersonRow[]>([]);
@@ -97,6 +96,7 @@ export function People() {
       return;
     }
 
+    const gcName = activeCompany?.display_name || activeCompany?.legal_name || '';
     const mapped: PersonRow[] = (peopleRes.data ?? []).map((p) => ({
       person_id: p.person_id,
       person_type: p.person_type,
@@ -104,7 +104,7 @@ export function People() {
       first_name: p.first_name ?? '',
       last_name: p.last_name ?? '',
       title: p.title ?? '',
-      organization: p.organization_name ?? '',
+      organization: p.organization_name ?? (p.contact_type === 'internal' || !p.organization_id ? gcName : ''),
       organization_id: p.organization_id ?? null,
       email: p.email ?? '',
       phone: p.phone ?? '',
@@ -177,7 +177,6 @@ export function People() {
       email: person.email,
       phone: person.phone,
       title: person.title,
-      contact_type: person.contactType === 'User' ? 'internal' : 'external',
       role_category: person.roleCategory,
       organization_id: person.organization_id ?? '',
       notes: '',
@@ -203,6 +202,7 @@ export function People() {
     setSaving(true);
     setFormError(null);
 
+    const orgId = form.organization_id || null;
     const payload = {
       company_id: activeCompanyId,
       first_name: form.first_name.trim(),
@@ -210,9 +210,9 @@ export function People() {
       email: form.email.trim() || null,
       phone: form.phone.trim() || null,
       title: form.title.trim() || null,
-      contact_type: form.contact_type || null,
+      contact_type: orgId ? 'external' : 'internal',
       role_category: form.role_category || null,
-      organization_id: form.organization_id || null,
+      organization_id: orgId,
     };
 
     if (editingPerson) {
@@ -280,7 +280,7 @@ export function People() {
   const columns: { key: SortKey; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'title', label: 'Title' },
-    { key: 'organization', label: 'Organization' },
+    { key: 'organization', label: 'Company' },
     { key: 'email', label: 'Email' },
     { key: 'phone', label: 'Phone' },
     { key: 'roleCategory', label: 'Role' },
@@ -300,7 +300,7 @@ export function People() {
           <div className="flex items-center gap-2">
             <input
               type="text"
-              placeholder="Search by name, email, org..."
+              placeholder="Search by name, email, company..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="rounded-md border border-slate-200 px-3 py-1.5 text-[12px] text-slate-700 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
@@ -528,44 +528,31 @@ export function People() {
               </div>
 
               <div>
-                <label className="mb-1 block text-[12px] font-medium text-slate-600">Organization</label>
+                <label className="mb-1 block text-[12px] font-medium text-slate-600">Company</label>
                 <select
                   value={form.organization_id}
                   onChange={(e) => setForm({ ...form, organization_id: e.target.value })}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 >
-                  <option value="">No organization</option>
+                  <option value="">No company</option>
                   {orgOptions.map((o) => (
                     <option key={o.id} value={o.id}>{o.name}</option>
                   ))}
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-[12px] font-medium text-slate-600">Type</label>
-                  <select
-                    value={form.contact_type}
-                    onChange={(e) => setForm({ ...form, contact_type: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                  >
-                    <option value="internal">Internal</option>
-                    <option value="external">External</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-[12px] font-medium text-slate-600">Role</label>
-                  <select
-                    value={form.role_category}
-                    onChange={(e) => setForm({ ...form, role_category: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                  >
-                    <option value="">Select role...</option>
-                    {ROLE_CATEGORIES.map((r) => (
-                      <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className="mb-1 block text-[12px] font-medium text-slate-600">Role</label>
+                <select
+                  value={form.role_category}
+                  onChange={(e) => setForm({ ...form, role_category: e.target.value })}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                >
+                  <option value="">Select role...</option>
+                  {ROLE_CATEGORIES.map((r) => (
+                    <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>
+                  ))}
+                </select>
               </div>
 
               {formError && (

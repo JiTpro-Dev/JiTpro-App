@@ -20,6 +20,7 @@ import { ProjectHome } from './pages/app/ProjectHome';
 import { Projects } from './pages/app/Projects';
 import { People } from './pages/app/People';
 import { Organizations } from './pages/app/Organizations';
+import { Directory } from './pages/app/Directory';
 import { CostCodes } from './pages/app/CostCodes';
 import { Calendars } from './pages/app/Calendars';
 import { ProjectTemplates } from './pages/app/ProjectTemplates';
@@ -125,6 +126,7 @@ function App() {
             <Route path="projects/new" element={<CreateProject />} />
             <Route path="people" element={<People />} />
             <Route path="organizations" element={<Organizations />} />
+            <Route path="directory" element={<Directory />} />
             <Route path="cost-codes" element={<CostCodes />} />
             <Route path="calendars" element={<Calendars />} />
             <Route path="project-templates" element={<ProjectTemplates />} />

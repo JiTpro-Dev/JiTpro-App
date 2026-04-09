@@ -1,5 +1,5 @@
 import {
-  Home, FolderKanban, ClipboardList, ListChecks, Users, Building2,
+  Home, FolderKanban, ClipboardList, ListChecks, Users, Building2, BookUser,
   Hash, Calendar, LayoutTemplate, CreditCard, Settings, LayoutDashboard,
   Package, GanttChart, MessageSquare, FileText, UserCog, GitCompare, BarChart3,
 } from 'lucide-react';
@@ -16,6 +16,7 @@ export const companyNavGroups: NavGroupConfig[] = [
   {
     label: 'Directories',
     items: [
+      { label: 'Directory', path: '/app/directory', icon: BookUser },
       { label: 'People', path: '/app/people', icon: Users },
       { label: 'Organizations', path: '/app/organizations', icon: Building2 },
     ],
