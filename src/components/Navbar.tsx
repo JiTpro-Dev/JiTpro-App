@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import jitproLogo from '../assets/jitpro_amber_stripped.svg';
 
 export function Navbar({ pageTitle }: { pageTitle?: string }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
 
@@ -24,6 +24,11 @@ export function Navbar({ pageTitle }: { pageTitle?: string }) {
           )}
         </div>
         <div className="flex items-center gap-4">
+          {user?.email && (
+            <span className="text-sm text-slate-600">
+              Welcome {user.email}
+            </span>
+          )}
           {isDashboard && (
             <Link to="/demo" className={navButtonClass}>
               View Demo
