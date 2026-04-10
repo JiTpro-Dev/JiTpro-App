@@ -21,16 +21,16 @@ const demos = [
 
 export function Demo() {
   return (
-    <AppLayout pageTitle="Demos">
+    <AppLayout pageTitle="Sandbox Demo">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {demos.map((demo) => (
           <Link
             key={demo.path}
             to={demo.path}
-            className="rounded-lg bg-white p-6 shadow-sm border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all"
+            className="rounded-lg bg-slate-800 p-6 shadow-sm border border-amber-500 hover:border-amber-400 hover:bg-slate-700 hover:shadow-md transition-all"
           >
-            <h3 className="font-semibold text-slate-900">{demo.name}</h3>
-            <p className="mt-1 text-sm text-slate-600">{demo.description}</p>
+            <h3 className="font-semibold text-white">{demo.name}</h3>
+            <p className="mt-1 text-sm text-slate-300">{demo.description}</p>
           </Link>
         ))}
       </div>

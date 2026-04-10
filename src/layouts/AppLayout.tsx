@@ -6,9 +6,11 @@ import { DemoSubNav } from '../components/DemoSubNav';
 export function AppLayout({ children, pageTitle, fullWidth }: { children: ReactNode; pageTitle?: string; fullWidth?: boolean }) {
   const location = useLocation();
   const isDemoPage = location.pathname.startsWith('/demo');
+  const isDashboard = location.pathname === '/dashboard';
+  const isDarkTheme = isDashboard || isDemoPage;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={isDarkTheme ? 'min-h-screen bg-slate-900' : 'min-h-screen bg-slate-50'}>
       <Navbar pageTitle={pageTitle} />
       {isDemoPage && <DemoSubNav />}
       <main className={fullWidth ? 'px-4 py-4 sm:px-6 lg:px-8' : 'mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'}>

@@ -35,7 +35,7 @@ export function DemoSubNav() {
   };
 
   return (
-    <div className="border-b border-slate-200 bg-white">
+    <div className="border-b border-slate-700 bg-slate-800">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between overflow-x-auto py-2">
           <div className="flex items-center gap-1">
@@ -47,8 +47,8 @@ export function DemoSubNav() {
                   to={link.path}
                   className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-slate-800 text-white'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-500 text-slate-900'
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white'
                   }`}
                 >
                   {link.label}
@@ -58,11 +58,11 @@ export function DemoSubNav() {
           </div>
           {isSchedulePage && (
             <div className="flex items-center gap-2 ml-4">
-              <label className="text-xs font-medium text-slate-500 whitespace-nowrap">Sort by:</label>
+              <label className="text-xs font-medium text-slate-400 whitespace-nowrap">Sort by:</label>
               <select
                 value={currentSort}
                 onChange={(e) => handleSortChange(e.target.value)}
-                className="rounded-md border border-slate-200 px-2 py-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                className="rounded-md border border-slate-600 bg-slate-700 px-2 py-1 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 {sortOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
