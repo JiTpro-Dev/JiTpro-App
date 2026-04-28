@@ -180,3 +180,73 @@ Before import:
 ## Uncommitted Changes
 
 There are likely uncommitted changes from today's work. Run `git status` and `git diff --stat` to see what needs committing before starting new work.
+
+---
+
+## 2026-04-28 — Refresh-bounce fix
+
+### Completed (deployed to production, commit `012e01f`)
+
+1. **Refresh on `/app/*` routes no longer bounces users back to `/dashboard`.**
+   `src/context/CompanyContext.tsx` — added an early-return when `authLoading`
+   is true so the company-validation effect doesn't set `loading=false` while
+   AuthContext is still resolving the session.
+2. **Rules of Hooks violation in `AppShell` defused.**
+   `src/layouts/AppShell/AppShell.tsx` — moved the `useState(isCollapsed)`
+   call above the early returns so the hook count is consistent across
+   renders.
+
+### Open follow-ups (not started)
+
+1. **Clean up `people.email` mismatches on existing rows.**
+   The setup wizard's Step 2 lets the admin email be typed freely, which
+   leaves the `email` field on the membership row out of sync with the
+   `auth.users.email` of the linked `auth_id`. Cosmetic — affects what
+   the People page displays, not access control. One SQL update will
+   normalize. Examples in the data today: company `34e9d764-…` has
+   `people.email='jeffk@kaufmanbuilding.com'` but `auth_id` points at
+   jeff@jit-pro.com; TopCon (`c2a14021-…`) has `people.email=''` (blank).
+2. **Fix the wizard so it can't create that mismatch again.**
+   `src/pages/setup/setupService.ts:saveCompanyAdmin` overwrites the
+   `email` column with whatever was typed in Step 2. Either pre-fill from
+   `auth.users.email` and warn on edit, or refuse to write a value that
+   doesn't match the logged-in user's email.
+3. **Tighten the `companies` SELECT RLS policy.**
+   Currently the dashboard lists every company in the database to every
+   authenticated user, regardless of `people:user` membership. Users can
+   click into a company they don't belong to; that's how the original
+   symptom in this session got triggered. Should be scoped via
+   `user_belongs_to_company(id)` like the other tables. Migration change
+   — needs explicit sign-off per CLAUDE.md.
+4. **Build a UI for adding additional users to an existing company.**
+   `setup_company()` only creates a `people:user` row for the creator.
+   Multi-user scenarios currently require direct SQL. Out of scope for
+   this session but a real product gap.
+
+### Root-cause notes
+
+The bounce was a render-timing race, not a data or auth problem:
+
+1. Initial render — `AuthContext.loading=true`, `user=null`.
+2. `CompanyContext` `useEffect` fires with `user=null`, sets `loading=false`
+   even though auth is still resolving.
+3. `getSession()` resolves; `AuthContext` renders with the new user.
+4. `AppShell` renders before `CompanyContext`'s effect can re-run with the
+   new user, sees `loading=false && !activeCompany`, fires
+   `<Navigate to="/dashboard" replace />`.
+5. `CompanyContext` effect re-runs and validates correctly — but too late,
+   navigation already happened.
+
+The fix was to make `CompanyContext` wait for auth to settle before
+deciding anything. The `people` row, RLS policies, JWT, and `setup_company()`
+were all working correctly the entire time.
+
+Diagnostic data captured along the way (kept for future reference):
+
+- jeff@jit-pro.com `auth.users.id`: `5c13e8c2-adff-4aae-a80c-98b54bce0b6c`
+- jeffk@kaufmanbuilding.com `auth.users.id`: `a0d12e9b-8525-42a1-ad9b-b2ee30341823`
+  (separate account, also belongs to the same human; intentional, multi-login).
+- jeff@jit-pro.com has valid `people:user` rows for 5 companies including
+  TopCon (`c2a14021-2611-4c4e-a83f-405ce31c56e5`).
+- The `companies` SELECT RLS policy is wide-open — the dashboard sees all
+  companies regardless of membership. See follow-up (3) above.
