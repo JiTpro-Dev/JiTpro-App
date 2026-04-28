@@ -48,13 +48,19 @@ async function fetchAndValidateCompany(
 }
 
 export function CompanyProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [activeCompanyId, setActiveCompanyId] = useState<string | null>(null);
   const [activeCompany, setActiveCompany] = useState<CompanyInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   // On mount (or user change), restore from localStorage and validate
   useEffect(() => {
+    // Wait for auth to finish resolving before deciding anything. Setting
+    // loading=false while auth is still in flight causes AppShell to render
+    // with no activeCompany and bounce back to /dashboard before the
+    // post-auth re-run of this effect can validate the stored company.
+    if (authLoading) return;
+
     if (!user) {
       setActiveCompanyId(null);
       setActiveCompany(null);
@@ -82,7 +88,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     }
 
     restoreCompany();
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleSetActiveCompany = useCallback((company: CompanyInfo) => {
     localStorage.setItem(STORAGE_KEY, company.id);

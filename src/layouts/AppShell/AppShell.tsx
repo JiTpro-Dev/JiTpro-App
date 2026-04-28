@@ -9,6 +9,12 @@ const COLLAPSE_KEY = 'jitpro_nav_collapsed';
 
 export function AppShell() {
   const { activeCompany, loading } = useCompany();
+  // Hooks must be called unconditionally before any early returns, or React
+  // throws "Rendered more hooks than during the previous render" when loading
+  // flips from true to false.
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem(COLLAPSE_KEY) === 'true';
+  });
 
   // Wait for company context to finish loading from localStorage
   if (loading) {
@@ -25,10 +31,6 @@ export function AppShell() {
   }
 
   const companyName = activeCompany?.display_name || activeCompany?.legal_name || '';
-
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    return localStorage.getItem(COLLAPSE_KEY) === 'true';
-  });
 
   const handleToggleCollapse = () => {
     setIsCollapsed((prev) => {
